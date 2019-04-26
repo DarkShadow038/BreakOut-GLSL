@@ -15,6 +15,8 @@ uniform mat4 view;
 // posição, rotação, escala do modelo (world)
 uniform mat4 model;
 
+uniform vec3 location;
+
 void main() {
     vertexPos = view * model * vec4(position, 1.0);
     gl_Position = projection * vertexPos;
