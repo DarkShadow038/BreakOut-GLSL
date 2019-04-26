@@ -1,18 +1,13 @@
-﻿/* Variávei globais */
+/* Vari�vei globais */
 
 let {mat4, vec4, vec3, vec2} = glMatrix;
 
-const SPEED = 0.1;
-
-const COS_45 = Math.cos(Math.PI * 0.25);
-
-let ku = 0, 
-    kd = 0, 
-    kl = 0, 
-    kr = 0,
-    pos = [0,0,0];
-
-let frame = 0,
+let i = 1,
+    j = 1,
+    k = 1,    
+    frame = 0,
+    frameIncrease = true,
+    time,
     canvas,
     gl,
     vertexShaderSource,
@@ -30,19 +25,117 @@ let frame = 0,
     loc = [0, 0, 0],
     modelUniform,
     model,
-    model2,
     viewUniform,
     view,
-    eye = [0, 0, 0],
+    eye,
     colorUniform,
-    color1 = [1, 0, 0],
-    color2 = [0, 0, 1],
-    color3 = [0, .7, 0],
-    color4 = [1, 0, 1],
-    color5 = [1, .6, 0],
-    color6 = [0, 1, 1];
+    allColor = [],
+    color = [],
+    blockColor, 
+    
+    active = false;
+    
+    xUp = 0,
+    yUp = 1,
+    zEye = 50,
+    activeLoop = true,
+    qntdBlock = 100,
+    p = [],
+    faces = [],
+    valor = [];
+  
+// Define as cores de cada bloco e armazena na matriz
+function cores()
+{    
+    let coresLoop = 0;
+    
+    while (coresLoop < 3)
+    {
+        color[coresLoop] = Math.round(Math.random());
 
-function resize() {
+        coresLoop++;
+        
+        if (color[0] === 1 && color[1] === 1 && color[2] === 1 || color[0] === 0 && color[1] === 0 && color[2] === 0)
+        {
+            coresLoop = 0;
+        }
+    }
+
+    blockColor = [color[0], color[1], color[2]];
+    
+    coresLoop = 0;
+}
+
+// Define a localiza��o de cada ponto e armazena em uma matriz
+function valorPonto()
+{       
+    let pontoLoop = 0;
+    
+    valor[0] = [
+        xA = -50, yA = 30, zA = 1,
+        xB = -45, yB = 30, zB = 1,
+        xC = -50, yC = 28, zC = 1,
+        xD = -45, yD = 28, zD = 1,
+        xE = -50, yE = 30, zE = -1,
+        xF = -45, yF = 30, zF = -1,
+        xG = -50, yG = 28, zG = -1,
+        xH = -45, yH = 28, zH = -1
+    ];
+    
+    while (pontoLoop < qntdBlock)
+    {
+        // Enquanto n�o chegar no final da linha, X � aumentado
+        if (pontoLoop % 20 !== 0 && pontoLoop !== 0)
+        {
+            xA += 5;
+            xB += 5;
+            xC += 5;
+            xD += 5;
+            xE += 5;
+            xF += 5;
+            xG += 5;
+            xH += 5;
+        }
+        // Aumenta o Y quando chega na quantidade definida do X
+        else
+        {
+            xA = -50;
+            xB = -45;      
+            xC = -50;
+            xD = -45;
+            xE = -50;
+            xF = -45;
+            xG = -50;
+            xH = -45;
+            
+            yA -= 2;
+            yB -= 2;      
+            yC -= 2;
+            yD -= 2;
+            yE -= 2;
+            yF -= 2;
+            yG -= 2;
+            yH -= 2;
+        }
+
+        // Adiciona os valores na matriz
+        valor[pontoLoop] = {
+            xA: xA, yA: yA, zA: zA, 
+            xB: xB, yB: yB, zB: zB, 
+            xC: xC, yC: yC, zC: zC, 
+            xD: xD, yD: yD, zD: zD, 
+            xE: xE, yE: yE, zE: zE, 
+            xF: xF, yF: yF, zF: zF, 
+            xG: xG, yG: yG, zG: zG, 
+            xH: xH, yH: yH, zH: zH
+        };        
+        
+        pontoLoop++;
+    }    
+}
+
+function resize() 
+{
     if (!gl) return;
     width = window.innerWidth;
     height = window.innerHeight;
@@ -58,27 +151,30 @@ function resize() {
     gl.uniformMatrix4fv(projectionUniform, false, projection);
 }
 
-
-function getCanvas() {
+function getCanvas() 
+{
     return document.querySelector("canvas");
 }
 
-function getGLContext(canvas) {
+function getGLContext(canvas) 
+{
     let gl = canvas.getContext("webgl");
     gl.enable(gl.DEPTH_TEST);
     return gl;
 }
 
-function compileShader(source, type, gl) {
+function compileShader(source, type, gl) 
+{
     let shader = gl.createShader(type);
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
-        console.error("ERRO NA COMPILAÇÃO", gl.getShaderInfoLog(shader));
+        console.error("ERRO NA COMPILA��O", gl.getShaderInfoLog(shader));
     return shader;
 }
 
-function linkProgram(vertexShader, fragmentShader, gl) {
+function linkProgram(vertexShader, fragmentShader, gl) 
+{
     let program = gl.createProgram();
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
@@ -88,48 +184,71 @@ function linkProgram(vertexShader, fragmentShader, gl) {
     return program;
 }
 
-function getData() {
-    let p = {
-        a: [-1, 1, -1],
-        b: [-1, -1, -1],
-        c: [1, 1, -1],
-        d: [1, -1, -1],
-        e: [-1, 1, 1],
-        f: [1, 1, 1],
-        g: [-1, -1, 1],
-        h: [1, -1, 1]
-    };
+function getData() 
+{    
+    let dataLoop = 0;
+    
+    while (dataLoop < qntdBlock)
+    {    
+        // Cria uma matriz de pontos com todos os pontos necess�rios para o bloco
+        p[dataLoop] = {
+            a: [valor[dataLoop].xA, valor[dataLoop].yA, valor[dataLoop].zA], 
+            b: [valor[dataLoop].xB, valor[dataLoop].yB, valor[dataLoop].zB],
+            c: [valor[dataLoop].xC, valor[dataLoop].yC, valor[dataLoop].zC],
+            d: [valor[dataLoop].xD, valor[dataLoop].yD, valor[dataLoop].zD],
+            e: [valor[dataLoop].xE, valor[dataLoop].yE, valor[dataLoop].zE], 
+            f: [valor[dataLoop].xF, valor[dataLoop].yF, valor[dataLoop].zF],
+            g: [valor[dataLoop].xG, valor[dataLoop].yG, valor[dataLoop].zG], 
+            h: [valor[dataLoop].xH, valor[dataLoop].yH, valor[dataLoop].zH]     
+        };      
 
-    let faces = [
-        // FRENTE
-        ...p.a, ...p.b, ...p.c,
-        ...p.d, ...p.c, ...p.b,
+        if (activeLoop === true)
+        {
+            // A cada loop, adiciona no final da matriz todos os novos pontos
+            faces.push (
+                //Front            
+                ...p[dataLoop].a, ...p[dataLoop].b, ...p[dataLoop].c,
+                ...p[dataLoop].d, ...p[dataLoop].c, ...p[dataLoop].b,
+                //Back
+                ...p[dataLoop].e, ...p[dataLoop].f, ...p[dataLoop].g,
+                ...p[dataLoop].h, ...p[dataLoop].g, ...p[dataLoop].f,
+                //Top
+                ...p[dataLoop].e, ...p[dataLoop].f, ...p[dataLoop].a,
+                ...p[dataLoop].b, ...p[dataLoop].a, ...p[dataLoop].f,
+                //Down
+                ...p[dataLoop].g, ...p[dataLoop].h, ...p[dataLoop].c,
+                ...p[dataLoop].d, ...p[dataLoop].c, ...p[dataLoop].h,
+                //Left
+                ...p[dataLoop].a, ...p[dataLoop].e, ...p[dataLoop].c,
+                ...p[dataLoop].g, ...p[dataLoop].c, ...p[dataLoop].e,
+                //Right
+                ...p[dataLoop].b, ...p[dataLoop].f, ...p[dataLoop].d,
+                ...p[dataLoop].h, ...p[dataLoop].d, ...p[dataLoop].f
+            );    
 
-        // TOPO
-        ...p.e, ...p.a, ...p.f,
-        ...p.c, ...p.f, ...p.a,
+            cores();   
 
-        // BAIXO
-        ...p.b, ...p.g, ...p.d,
-        ...p.h, ...p.d, ...p.g,
-
-        // ESQUERDA
-        ...p.e, ...p.g, ...p.a,
-        ...p.b, ...p.a, ...p.g,
-
-        // DIREITA
-        ...p.c, ...p.d, ...p.f,
-        ...p.h, ...p.f, ...p.d,
-
-        //FUNDO
-        ...p.f, ...p.h, ...p.e,
-        ...p.g, ...p.e, ...p.h
-    ];
-
-    return { "points": new Float32Array(faces)};
+            // Adiciona na matriz as cores de cada bloco
+            allColor.push (                
+                blockColor, //Front
+            );
+        }
+        dataLoop++;
+    }
+    
+    if (dataLoop === qntdBlock)
+    {
+        activeLoop = false;
+    }
+    
+    return {"points": new Float32Array(faces)};
 }
 
-async function main() {
+async function main() 
+{
+    // 0.1 - Adiciona todos os pontos dos blocos
+    valorPonto();
+    
     // 1 - Carregar tela de desenho
     canvas = getCanvas();
 
@@ -137,21 +256,21 @@ async function main() {
     gl = getGLContext(canvas);
 
     // 3 - Ler os arquivos de shader
-    vertexShaderSource = await fetch("vertex.glsl").then(r => r.text());
+    vertexShaderSource = await fetch("Vertex.glsl").then(r => r.text());
     console.log("VERTEX", vertexShaderSource);
-
-    fragmentShaderSource = await fetch("fragment.glsl").then(r => r.text());
+    fragmentShaderSource = await fetch("Fragment.glsl").then(r => r.text());
     console.log("FRAGMENT", fragmentShaderSource);
 
     // 4 - Compilar arquivos de shader
     vertexShader = compileShader(vertexShaderSource, gl.VERTEX_SHADER, gl);
     fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER, gl);
+    
 
     // 5 - Linkar o programa de shader
     shaderProgram = linkProgram(vertexShader, fragmentShader, gl);
     gl.useProgram(shaderProgram);
 
-    // 6 - Criar dados de parâmetro
+    // 6 - Criar dados de par�metro
     data = getData();
 
     // 7 - Transferir os dados para GPU
@@ -167,8 +286,8 @@ async function main() {
     window.addEventListener("resize", resize);
 
     // 7.2 - VIEW MATRIX UNIFORM
-    eye  = [0, 5, 5];
-    let up = [0, 1, 0];
+    eye  = [0, 0, zEye];
+    let up = [xUp, yUp, 0];
     let center = [0, 0, 0];
     view = mat4.lookAt([], eye, center, up);
     viewUniform = gl.getUniformLocation(shaderProgram, "view");
@@ -177,89 +296,137 @@ async function main() {
     // 7.3 - MODEL MATRIX UNIFORM
     model = mat4.create();
     modelUniform = gl.getUniformLocation(shaderProgram, "model");
+    gl.uniformMatrix4fv(modelUniform, false, model);
     
-    model2 = mat4.fromTranslation([], pos);
-
-
     // 7.4 - COLOR UNIFORM
     colorUniform = gl.getUniformLocation(shaderProgram, "color");
-    //gl.uniform2f(locationUniform, loc[0], loc[1]);
 
     // 8 - Chamar o loop de redesenho
     render();
-
 }
 
-function render() {
-    frame ++;
-
-    let time = frame / 100;
-
-    let hor = (kl + kr) * SPEED;
-    let ver = (ku + kd) * SPEED;
-
-    if(hor !== 0 && ver !== 0) {
-        hor *= COS_45;
-        ver *= COS_45;
+function render() 
+{
+    let renderLoop = 0;
+    
+    if (active)
+    {
+        cam();
+        
+        if (time === 1 || time === 0)
+        {
+            active = false;
+        }
     }
-
-    pos[0] += hor;
-    pos[1] += ver;
-
-    model2 = mat4.fromTranslation([], pos);
-
-
-    //eye  = [Math.sin(time) * 5, 3, Math.cos(time) * 5];
-    let up = [0, 1, 0];
-    let center = [0, 0, 0];
-    view = mat4.lookAt([], eye, center, up);
-    gl.uniformMatrix4fv(viewUniform, false, view);
-
-
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
     // gl.POINTS
     // gl.LINES, gl.LINE_STRIP, gl.LINE_LOOP
     // gl.TRIANGLES, gl.TRIANGLE_STRIP, gl.TRIANGLE_FAN 
-    //gl.drawArrays(gl.TRIANGLES, 0, data.points.length / 2);
     
-    // CUBO 01
-    gl.uniformMatrix4fv(modelUniform, false, model);
-    gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
-    gl.drawArrays(gl.TRIANGLES, 0, 36);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+ 
+    while (renderLoop < qntdBlock)
+    {
+        // Front
+        gl.uniform3f(colorUniform, allColor[renderLoop][0], allColor[renderLoop][1], allColor[renderLoop][2]);
+        gl.drawArrays(gl.TRIANGLES, (renderLoop * 30 + renderLoop * 6) + 0, 6);
+        // Back
+        gl.uniform3f(colorUniform, allColor[renderLoop][0], allColor[renderLoop][1], allColor[renderLoop][2]);
+        gl.drawArrays(gl.TRIANGLES, (renderLoop * 30 + renderLoop * 6) + 6, 6);
+        // Top
+        gl.uniform3f(colorUniform, allColor[renderLoop][0], allColor[renderLoop][1], allColor[renderLoop][2]);
+        gl.drawArrays(gl.TRIANGLES, (renderLoop * 30 + renderLoop * 6) + 12, 6);
+        // Down
+        gl.uniform3f(colorUniform, allColor[renderLoop][0], allColor[renderLoop][1], allColor[renderLoop][2]);
+        gl.drawArrays(gl.TRIANGLES, (renderLoop * 30 + renderLoop * 6) + 18, 6);
+        // Left
+        gl.uniform3f(colorUniform, allColor[renderLoop][0], allColor[renderLoop][1], allColor[renderLoop][2]);
+        gl.drawArrays(gl.TRIANGLES, (renderLoop * 30 + renderLoop * 6) + 24, 6);
+        // Right
+        gl.uniform3f(colorUniform, allColor[renderLoop][0], allColor[renderLoop][1], allColor[renderLoop][2]);
+        gl.drawArrays(gl.TRIANGLES, (renderLoop * 30 + renderLoop * 6) + 30, 6);
+        
+        renderLoop++;
+    }
+        
+   window.requestAnimationFrame(main);
+}
 
-    // CUBO 02
-    gl.uniformMatrix4fv(modelUniform, false, model2);
-    gl.uniform3f(colorUniform, color2[0], color2[1], color2[2]);
-    gl.drawArrays(gl.TRIANGLES, 0, 36);
+function cam()
+{      
+    // Define de o frame aumenta ou diminui
+    if (frameIncrease === true)
+    {
+       frame++;
+    }
+    else
+    {
+        frame--;
+    }
+
+    time = frame / 120;
+
+    // Faz com que o time sempre esteja entre 0 e 1
+    if (time === 0)
+    {
+        frameIncrease = true;
+    }
+    else if (time === 1)
+    {
+        frameIncrease = false;
+    }
+
+    // Altera o Up de acordo com o time
+    if (time <= 0.25)
+    {
+        xUp = time * 4;
+    }
+    else if (time <= 0.5)
+    {
+        yUp = -1 * (time * 4 - 2);
+    }
+    else if (time <= 0.75)
+    {
+        yUp = -1 * ((time - 0.5) * 4);    
+    }
+    else
+    {
+        xUp = -1 * ((time - 0.5) * 4 - 2);
+    }
     
-    window.requestAnimationFrame(render);
+    // Altera o Eye de acordo com o time
+    if (time <= 0.5)
+    {
+        zEye = 50 + (time * 120);    
+    }
+    else
+    {
+        zEye = 50 + (((time * 120) - 120) * -1);
+    }
+    
+    eye  = [0, 0, zEye];
+    up = [xUp, yUp, 0];
+    center = [0, 0, 0];
+    view = mat4.lookAt([], eye, center, up);
+    gl.uniformMatrix4fv(viewUniform, false, view);
+        
 }
 
-function follow(evt) {
-    let locX = evt.x / window.innerWidth * 2 - 1;
-    let locY = evt.y / window.innerHeight * -2 + 1;
-    loc = [locX, locY];
+function activeButton()
+{
+    document.onkeydown = function(event) 
+    {
+        switch (event.keyCode) 
+        {
+            case 32:
+                if (!active)
+                {
+                    active = true;
+                }
+                break;
+        }   
+    };
 }
 
-function keyUp(evt){
-    if(evt.key === "ArrowDown") return kd = 0;
-    if(evt.key === "ArrowUp") return ku = 0;
-    if(evt.key === "ArrowLeft") return kl = 0;
-    if(evt.key === "ArrowRight") return kr = 0;
-}
-
-function keyDown(evt){
-    if(evt.key === "ArrowDown") return kd = -1;
-    if(evt.key === "ArrowUp") return ku = 1;
-    if(evt.key === "ArrowLeft") return kl = -1;
-    if(evt.key === "ArrowRight") return kr = 1;
-}
-
-
-// keypress, keydown, keyup
 window.addEventListener("load", main);
-
-window.addEventListener("mousemove", follow);
-
-window.addEventListener("keyup", keyUp);
-window.addEventListener("keydown", keyDown);
+window.addEventListener("keydown", activeButton)
