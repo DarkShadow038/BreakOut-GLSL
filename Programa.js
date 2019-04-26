@@ -24,14 +24,16 @@ let i = 1,
     projection,
     loc = [0, 0, 0],
     modelUniform,
-    model,
+    block,
+    table,
+    ball,
     viewUniform,
     view,
     eye,
     colorUniform,
-    allColor = [],
-    color = [],
-    blockColor, 
+    Color = [],
+    color1 = [1, 0, 0],
+    tablePos = [5, 0, 0]
     
     active = false;
     
@@ -39,10 +41,15 @@ let i = 1,
     yUp = 1,
     zEye = 50,
     activeLoop = true,
-    qntdBlock = 100,
-    p = [],
-    faces = [],
-    valor = [];
+
+    xA = -50, yA = 30, zA = 1,
+    xB = -45, yB = 30, zB = 1,
+    xC = -50, yC = 28, zC = 1,
+    xD = -45, yD = 28, zD = 1,
+    xE = -50, yE = 30, zE = -1,
+    xF = -45, yF = 30, zF = -1,
+    xG = -50, yG = 28, zG = -1,
+    xH = -45, yH = 28, zH = -1;
   
 // Define as cores de cada bloco e armazena na matriz
 function cores()
@@ -51,87 +58,16 @@ function cores()
     
     while (coresLoop < 3)
     {
-        color[coresLoop] = Math.round(Math.random());
+        Color[coresLoop] = Math.round(Math.random());
 
         coresLoop++;
         
-        if (color[0] === 1 && color[1] === 1 && color[2] === 1 || color[0] === 0 && color[1] === 0 && color[2] === 0)
+        if (Color[0] === 1 && Color[1] === 1 && Color[2] === 1 || Color[0] === 0 && Color[1] === 0 && Color[2] === 0)
         {
             coresLoop = 0;
         }
     }
-
-    blockColor = [color[0], color[1], color[2]];
     
-    coresLoop = 0;
-}
-
-// Define a localiza��o de cada ponto e armazena em uma matriz
-function valorPonto()
-{       
-    let pontoLoop = 0;
-    
-    valor[0] = [
-        xA = -50, yA = 30, zA = 1,
-        xB = -45, yB = 30, zB = 1,
-        xC = -50, yC = 28, zC = 1,
-        xD = -45, yD = 28, zD = 1,
-        xE = -50, yE = 30, zE = -1,
-        xF = -45, yF = 30, zF = -1,
-        xG = -50, yG = 28, zG = -1,
-        xH = -45, yH = 28, zH = -1
-    ];
-    
-    while (pontoLoop < qntdBlock)
-    {
-        // Enquanto n�o chegar no final da linha, X � aumentado
-        if (pontoLoop % 20 !== 0 && pontoLoop !== 0)
-        {
-            xA += 5;
-            xB += 5;
-            xC += 5;
-            xD += 5;
-            xE += 5;
-            xF += 5;
-            xG += 5;
-            xH += 5;
-        }
-        // Aumenta o Y quando chega na quantidade definida do X
-        else
-        {
-            xA = -50;
-            xB = -45;      
-            xC = -50;
-            xD = -45;
-            xE = -50;
-            xF = -45;
-            xG = -50;
-            xH = -45;
-            
-            yA -= 2;
-            yB -= 2;      
-            yC -= 2;
-            yD -= 2;
-            yE -= 2;
-            yF -= 2;
-            yG -= 2;
-            yH -= 2;
-        }
-
-        // Adiciona os valores na matriz
-        valor[pontoLoop] = {
-            xA: xA, yA: yA, zA: zA, 
-            xB: xB, yB: yB, zB: zB, 
-            xC: xC, yC: yC, zC: zC, 
-            xD: xD, yD: yD, zD: zD, 
-            xE: xE, yE: yE, zE: zE, 
-            xF: xF, yF: yF, zF: zF, 
-            xG: xG, yG: yG, zG: zG, 
-            xH: xH, yH: yH, zH: zH
-        };        
-        
-        pontoLoop++;
-    }    
 }
 
 function resize() 
@@ -186,69 +122,45 @@ function linkProgram(vertexShader, fragmentShader, gl)
 
 function getData() 
 {    
-    let dataLoop = 0;
-    
-    while (dataLoop < qntdBlock)
-    {    
-        // Cria uma matriz de pontos com todos os pontos necess�rios para o bloco
-        p[dataLoop] = {
-            a: [valor[dataLoop].xA, valor[dataLoop].yA, valor[dataLoop].zA], 
-            b: [valor[dataLoop].xB, valor[dataLoop].yB, valor[dataLoop].zB],
-            c: [valor[dataLoop].xC, valor[dataLoop].yC, valor[dataLoop].zC],
-            d: [valor[dataLoop].xD, valor[dataLoop].yD, valor[dataLoop].zD],
-            e: [valor[dataLoop].xE, valor[dataLoop].yE, valor[dataLoop].zE], 
-            f: [valor[dataLoop].xF, valor[dataLoop].yF, valor[dataLoop].zF],
-            g: [valor[dataLoop].xG, valor[dataLoop].yG, valor[dataLoop].zG], 
-            h: [valor[dataLoop].xH, valor[dataLoop].yH, valor[dataLoop].zH]     
-        };      
-
-        if (activeLoop === true)
-        {
+    // Cria uma matriz de pontos com todos os pontos necess�rios para o bloco
+    let p = {
+            a: [xA, yA, zA], 
+            b: [xB, yB, zB],
+            c: [xC, yC, zC],
+            d: [xD, yD, zD],
+            e: [xE, yE, zE], 
+            f: [xF, yF, zF],
+            g: [xG, yG, zG], 
+            h: [xH, yH, zH]
+    };        
             // A cada loop, adiciona no final da matriz todos os novos pontos
-            faces.push (
-                //Front            
-                ...p[dataLoop].a, ...p[dataLoop].b, ...p[dataLoop].c,
-                ...p[dataLoop].d, ...p[dataLoop].c, ...p[dataLoop].b,
-                //Back
-                ...p[dataLoop].e, ...p[dataLoop].f, ...p[dataLoop].g,
-                ...p[dataLoop].h, ...p[dataLoop].g, ...p[dataLoop].f,
-                //Top
-                ...p[dataLoop].e, ...p[dataLoop].f, ...p[dataLoop].a,
-                ...p[dataLoop].b, ...p[dataLoop].a, ...p[dataLoop].f,
-                //Down
-                ...p[dataLoop].g, ...p[dataLoop].h, ...p[dataLoop].c,
-                ...p[dataLoop].d, ...p[dataLoop].c, ...p[dataLoop].h,
-                //Left
-                ...p[dataLoop].a, ...p[dataLoop].e, ...p[dataLoop].c,
-                ...p[dataLoop].g, ...p[dataLoop].c, ...p[dataLoop].e,
-                //Right
-                ...p[dataLoop].b, ...p[dataLoop].f, ...p[dataLoop].d,
-                ...p[dataLoop].h, ...p[dataLoop].d, ...p[dataLoop].f
-            );    
-
-            cores();   
-
-            // Adiciona na matriz as cores de cada bloco
-            allColor.push (                
-                blockColor, //Front
-            );
-        }
-        dataLoop++;
-    }
+    let faces =  [
+        //Front            
+        ...p.a, ...p.b, ...p.c,
+        ...p.d, ...p.c, ...p.b,
+        //Back
+        ...p.e, ...p.f, ...p.g,
+        ...p.h, ...p.g, ...p.f,
+        //Top
+        ...p.e, ...p.f, ...p.a,
+        ...p.b, ...p.a, ...p.f,
+        //Down
+        ...p.g, ...p.h, ...p.c,
+        ...p.d, ...p.c, ...p.h,
+        //Left
+        ...p.a, ...p.e, ...p.c,
+        ...p.g, ...p.c, ...p.e,
+        //Right
+        ...p.b, ...p.f, ...p.d,
+        ...p.h, ...p.d, ...p.f
+    ];    
+ 
     
-    if (dataLoop === qntdBlock)
-    {
-        activeLoop = false;
-    }
-    
-    return {"points": new Float32Array(faces)};
+    return {"points" : new Float32Array(faces)};
 }
 
 async function main() 
-{
-    // 0.1 - Adiciona todos os pontos dos blocos
-    valorPonto();
-    
+{    
     // 1 - Carregar tela de desenho
     canvas = getCanvas();
 
@@ -294,9 +206,12 @@ async function main()
     gl.uniformMatrix4fv(viewUniform, false, view);
 
     // 7.3 - MODEL MATRIX UNIFORM
-    model = mat4.create();
+    block = mat4.create();
     modelUniform = gl.getUniformLocation(shaderProgram, "model");
-    gl.uniformMatrix4fv(modelUniform, false, model);
+    // gl.uniformMatrix4fv(modelUniform, false, model);
+    
+    table = mat4.fromTranslation([], tablePos);
+
     
     // 7.4 - COLOR UNIFORM
     colorUniform = gl.getUniformLocation(shaderProgram, "color");
@@ -307,8 +222,6 @@ async function main()
 
 function render() 
 {
-    let renderLoop = 0;
-    
     if (active)
     {
         cam();
@@ -325,29 +238,14 @@ function render()
     
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
  
-    while (renderLoop < qntdBlock)
-    {
-        // Front
-        gl.uniform3f(colorUniform, allColor[renderLoop][0], allColor[renderLoop][1], allColor[renderLoop][2]);
-        gl.drawArrays(gl.TRIANGLES, (renderLoop * 30 + renderLoop * 6) + 0, 6);
-        // Back
-        gl.uniform3f(colorUniform, allColor[renderLoop][0], allColor[renderLoop][1], allColor[renderLoop][2]);
-        gl.drawArrays(gl.TRIANGLES, (renderLoop * 30 + renderLoop * 6) + 6, 6);
-        // Top
-        gl.uniform3f(colorUniform, allColor[renderLoop][0], allColor[renderLoop][1], allColor[renderLoop][2]);
-        gl.drawArrays(gl.TRIANGLES, (renderLoop * 30 + renderLoop * 6) + 12, 6);
-        // Down
-        gl.uniform3f(colorUniform, allColor[renderLoop][0], allColor[renderLoop][1], allColor[renderLoop][2]);
-        gl.drawArrays(gl.TRIANGLES, (renderLoop * 30 + renderLoop * 6) + 18, 6);
-        // Left
-        gl.uniform3f(colorUniform, allColor[renderLoop][0], allColor[renderLoop][1], allColor[renderLoop][2]);
-        gl.drawArrays(gl.TRIANGLES, (renderLoop * 30 + renderLoop * 6) + 24, 6);
-        // Right
-        gl.uniform3f(colorUniform, allColor[renderLoop][0], allColor[renderLoop][1], allColor[renderLoop][2]);
-        gl.drawArrays(gl.TRIANGLES, (renderLoop * 30 + renderLoop * 6) + 30, 6);
-        
-        renderLoop++;
-    }
+    //Block
+    gl.uniformMatrix4fv(modelUniform, false, block);
+    gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
+    gl.drawArrays(gl.TRIANGLES, 0, 36);
+
+    gl.uniformMatrix4fv(modelUniform, false, table);
+    gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
+    gl.drawArrays(gl.TRIANGLES, 0, 36);
         
    window.requestAnimationFrame(main);
 }
