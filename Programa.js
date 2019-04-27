@@ -24,8 +24,7 @@ let i = 1,
     projection,
     loc = [0, 0, 0],
     modelUniform,
-    block,
-    //blockPos = [30, 0, 0],
+    blockPos = [0, 0, 0],
     table,
     ball,
     viewUniform,
@@ -34,8 +33,6 @@ let i = 1,
     colorUniform,
     Color = [],
     color1 = [1, 0, 0],
-    tableWidth = window.innerWidth,
-    tableHeight = window.innerHeight,
     
     active = false,
     
@@ -216,11 +213,7 @@ async function main()
     gl.uniformMatrix4fv(viewUniform, false, view);
 
     // 7.3 - MODEL MATRIX UNIFORM
-    block = mat4.create();
     modelUniform = gl.getUniformLocation(shaderProgram, "model");
-    
-    //table = mat4.fromTranslation([], tablePos);
-
     
     // 7.4 - COLOR UNIFORM
     colorUniform = gl.getUniformLocation(shaderProgram, "color");
@@ -247,13 +240,31 @@ function render()
     
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
  
+    let i = 0,
+        x = 0;
+    while (i < 10) {
+        table = mat4.fromTranslation([], blockPos);
+
+        gl.uniformMatrix4fv(modelUniform, false, table);
+        gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
+        gl.drawArrays(gl.TRIANGLES, 0, 36);
+        gl.polygonOffset(1, 1);
+        gl.uniform3f(colorUniform, 0, 0, 0);
+        gl.drawArrays(gl.LINE_STRIP, 36, 28);
+
+        blockPos [0] = x += 5;
+        i++;
+    }
+
     //Block
-    gl.uniformMatrix4fv(modelUniform, false, block);
+    /*gl.uniformMatrix4fv(modelUniform, false, block);
     gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
     gl.drawArrays(gl.TRIANGLES, 0, 36);
     gl.polygonOffset(1, 1);
     gl.uniform3f(colorUniform, 0, 0, 0);
-    gl.drawArrays(gl.LINE_STRIP, 36, 28);
+    gl.drawArrays(gl.LINE_STRIP, 36, 28);*/
+
+    
 
     // gl.uniformMatrix4fv(modelUniform, false, table);
     // gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
