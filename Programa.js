@@ -24,15 +24,21 @@ let i = 1,
     projection,
     loc = [0, 0, 0],
     modelUniform,
+    block = [],
+    maxBlocks = 100,
+    showBlock = [],
+    blockActive = true,
     blockPos = [0, 0, 0],
     table,
+    tablePos = [0, 0, 0],
     ball,
+    ballPos = [0, 0, 0],
+    ballX = 0,
+    ballY = 0,   
     viewUniform,
     view,
     eye,
     colorUniform,
-    Color = [],
-    color1 = [1, 0, 0],
     
     active = false,
     
@@ -41,33 +47,33 @@ let i = 1,
     zEye = 50,
     activeLoop = true,
 
-    xA = -50, yA = 30, zA = 1,
-    xB = -45, yB = 30, zB = 1,
-    xC = -50, yC = 28, zC = 1,
-    xD = -45, yD = 28, zD = 1,
+    xA = -50, yA = 30, zA =  1,
+    xB = -45, yB = 30, zB =  1,
+    xC = -50, yC = 28, zC =  1,
+    xD = -45, yD = 28, zD =  1,
     xE = -50, yE = 30, zE = -1,
     xF = -45, yF = 30, zF = -1,
     xG = -50, yG = 28, zG = -1,
-    xH = -45, yH = 28, zH = -1;
+    xH = -45, yH = 28, zH = -1,
 
-// Define as cores de cada bloco e armazena na matriz
-function cores()
-{    
-    let coresLoop = 0;
-    
-    while (coresLoop < 3)
-    {
-        Color[coresLoop] = Math.round(Math.random());
+    xAt = -5, yAt = -30, zAt =  1,
+    xBt =  5, yBt = -30, zBt =  1,
+    xCt = -5, yCt = -32, zCt =  1,
+    xDt =  5, yDt = -32, zDt =  1,
+    xEt = -5, yEt = -30, zEt = -1,
+    xFt =  5, yFt = -30, zFt = -1,
+    xGt = -5, yGt = -32, zGt = -1,
+    xHt =  5, yHt = -32, zHt = -1,
 
-        coresLoop++;
-        
-        if (Color[0] === 1 && Color[1] === 1 && Color[2] === 1 || Color[0] === 0 && Color[1] === 0 && Color[2] === 0)
-        {
-            coresLoop = 0;
-        }
-    }
-    
-}
+    xAb = -1, yAb = -28, zAb =  1,
+    xBb =  1, yBb = -28, zBb =  1,
+    xCb = -1, yCb = -30, zCb =  1,
+    xDb =  1, yDb = -30, zDb =  1,
+    xEb = -1, yEb = -28, zEb = -1,
+    xFb =  1, yFb = -28, zFb = -1,
+    xGb = -1, yGb = -30, zGb = -1,
+    xHb =  1, yHb = -30, zHb = -1;
+
 
 function resize() 
 {
@@ -131,7 +137,25 @@ function getData()
             e: [xE, yE, zE], 
             f: [xF, yF, zF],
             g: [xG, yG, zG], 
-            h: [xH, yH, zH]
+            h: [xH, yH, zH],
+
+            at: [xAt, yAt, zAt], 
+            bt: [xBt, yBt, zBt],
+            ct: [xCt, yCt, zCt],
+            dt: [xDt, yDt, zDt],
+            et: [xEt, yEt, zEt], 
+            ft: [xFt, yFt, zFt],
+            gt: [xGt, yGt, zGt], 
+            ht: [xHt, yHt, zHt],
+
+            ab: [xAb, yAb, zAb], 
+            bb: [xBb, yBb, zBb],
+            cb: [xCb, yCb, zCb],
+            db: [xDb, yDb, zDb],
+            eb: [xEb, yEb, zEb], 
+            fb: [xFb, yFb, zFb],
+            gb: [xGb, yGb, zGb], 
+            hb: [xHb, yHb, zHb],
     };        
             // A cada loop, adiciona no final da matriz todos os novos pontos
     let faces =  [
@@ -159,7 +183,63 @@ function getData()
         ...p.a, ...p.b, ...p.d, ...p.c,
         ...p.a, ...p.e, ...p.f, ...p.h, ...p.g, ...p.e,
         ...p.g, ...p.h, ...p.d, ...p.c, ...p.g,
-        ...p.h, ...p.f, ...p.b, ...p.d, ...p.h
+        ...p.h, ...p.f, ...p.b, ...p.d, ...p.h,
+        //_______________//
+
+
+        //Front            
+        ...p.at, ...p.bt, ...p.ct,
+        ...p.dt, ...p.ct, ...p.bt,
+        //Back
+        ...p.et, ...p.ft, ...p.gt,
+        ...p.ht, ...p.gt, ...p.ft,
+        //Top
+        ...p.et, ...p.ft, ...p.at,
+        ...p.bt, ...p.at, ...p.ft,
+        //Down
+        ...p.gt, ...p.ht, ...p.ct,
+        ...p.dt, ...p.ct, ...p.ht,
+        //Left
+        ...p.at, ...p.et, ...p.ct,
+        ...p.gt, ...p.ct, ...p.et,
+        //Right
+        ...p.bt, ...p.ft, ...p.dt,
+        ...p.ht, ...p.dt, ...p.ft,
+
+        ...p.at, ...p.et, ...p.ft, ...p.bt, 
+        ...p.at, ...p.ct, ...p.gt, ...p.et,
+        ...p.at, ...p.bt, ...p.dt, ...p.ct,
+        ...p.at, ...p.et, ...p.ft, ...p.ht, ...p.gt, ...p.et,
+        ...p.gt, ...p.ht, ...p.dt, ...p.ct, ...p.gt,
+        ...p.ht, ...p.ft, ...p.bt, ...p.dt, ...p.ht,
+        //_______________//
+
+
+        //Front            
+        ...p.ab, ...p.bb, ...p.cb,
+        ...p.db, ...p.cb, ...p.bb,
+        //Back
+        ...p.eb, ...p.fb, ...p.gb,
+        ...p.hb, ...p.gb, ...p.fb,
+        //Top
+        ...p.eb, ...p.fb, ...p.ab,
+        ...p.bb, ...p.ab, ...p.fb,
+        //Down
+        ...p.gb, ...p.hb, ...p.cb,
+        ...p.db, ...p.cb, ...p.hb,
+        //Left
+        ...p.ab, ...p.eb, ...p.cb,
+        ...p.gb, ...p.cb, ...p.eb,
+        //Right
+        ...p.bb, ...p.fb, ...p.db,
+        ...p.hb, ...p.db, ...p.fb,
+
+        ...p.ab, ...p.eb, ...p.fb, ...p.bb, 
+        ...p.ab, ...p.cb, ...p.gb, ...p.eb,
+        ...p.ab, ...p.bb, ...p.db, ...p.cb,
+        ...p.ab, ...p.eb, ...p.fb, ...p.hb, ...p.gb, ...p.eb,
+        ...p.gb, ...p.hb, ...p.db, ...p.cb, ...p.gb,
+        ...p.hb, ...p.fb, ...p.bb, ...p.db, ...p.hb
     ];    
  
     
@@ -241,48 +321,83 @@ function render()
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
  
     let i = 0,
-        x = 0;
-    while (i < 10) {
-        table = mat4.fromTranslation([], blockPos);
+        blockX = 0,
+        blockY = 0;
 
-        gl.uniformMatrix4fv(modelUniform, false, table);
-        gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
-        gl.drawArrays(gl.TRIANGLES, 0, 36);
-        gl.polygonOffset(1, 1);
-        gl.uniform3f(colorUniform, 0, 0, 0);
-        gl.drawArrays(gl.LINE_STRIP, 36, 28);
+    while (i < maxBlocks) 
+    {
+        if(blockActive)
+        {
+            showBlock[i] = true;
+        }
 
-        blockPos [0] = x += 5;
+        if(showBlock[i] === true)
+        {
+            block[i] = mat4.fromTranslation([], blockPos);
+
+            gl.uniformMatrix4fv(modelUniform, false, block[i]);
+            gl.uniform3f(colorUniform, 1, 0, 0);
+            gl.drawArrays(gl.TRIANGLES, 0, 36);
+            gl.polygonOffset(1, 1);
+            gl.uniform3f(colorUniform, 0, 0, 0);
+            gl.drawArrays(gl.LINE_STRIP, 36, 28);
+
+        }
+        if(i % 20 === 0)
+        {
+            blockY -= 2;
+            blockX = 0;
+        }
+        else
+        {            
+            
+            blockX += 5;
+        }
+
+        blockPos[0] = blockX;
+        blockPos[1] = blockY;
+
         i++;
     }
 
-    //Block
-    /*gl.uniformMatrix4fv(modelUniform, false, block);
-    gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
-    gl.drawArrays(gl.TRIANGLES, 0, 36);
+    blockActive = false;
+
+    table = mat4.fromTranslation([], tablePos);
+    gl.uniformMatrix4fv(modelUniform, false, table);
+    gl.uniform3f(colorUniform, 0, 1, 1);
+    gl.drawArrays(gl.TRIANGLES, 64, 36);
     gl.polygonOffset(1, 1);
     gl.uniform3f(colorUniform, 0, 0, 0);
-    gl.drawArrays(gl.LINE_STRIP, 36, 28);*/
+    gl.drawArrays(gl.LINE_STRIP, 100, 28);
 
-    
 
-    // gl.uniformMatrix4fv(modelUniform, false, table);
-    // gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
-    // gl.drawArrays(gl.TRIANGLES, 0, 36);
+    ball = mat4.fromTranslation([], ballPos);
+    gl.uniformMatrix4fv(modelUniform, false, ball);
+    gl.uniform3f(colorUniform, 1, 1, 1);
+    gl.drawArrays(gl.TRIANGLES, 128, 36);
+    gl.polygonOffset(1, 1);
+    gl.uniform3f(colorUniform, 0, 0, 0);
+    gl.drawArrays(gl.LINE_STRIP, 164, 28);
+
+    ballX++;
+    ballY++;
+
+    ballPos[0] = ballX;
+    ballPos[1] = ballY;
         
    window.requestAnimationFrame(main);
 }
 
 function cam()
 {      
-    // Define de o frame aumenta ou diminui
+    // Define se o frame aumenta ou diminui
     if (frameIncrease === true)
     {
-       frame++;
+       frame += 3;
     }
     else
     {
-        frame--;
+        frame -= 3;
     }
 
     time = frame / 120;
@@ -345,8 +460,18 @@ function activeButton()
                     active = true;
                 }
                 break;
+            case 87:
+                showBlock[5] = false;
+                alert(block[0]/*[12] + " " + block[0][13]*/);
+                break;
+            case 37:
+                tablePos[0] -= 3;
+                break;
+            case 39:
+                tablePos[0] += 3;
+                break;
         }   
-    };
+    }
 }
 
 window.addEventListener("load", main);
