@@ -25,6 +25,7 @@ let i = 1,
     loc = [0, 0, 0],
     modelUniform,
     block,
+    //blockPos = [30, 0, 0],
     table,
     ball,
     viewUniform,
@@ -33,9 +34,10 @@ let i = 1,
     colorUniform,
     Color = [],
     color1 = [1, 0, 0],
-    tablePos = [5, 0, 0]
+    tableWidth = window.innerWidth,
+    tableHeight = window.innerHeight,
     
-    active = false;
+    active = false,
     
     xUp = 0,
     yUp = 1,
@@ -50,7 +52,7 @@ let i = 1,
     xF = -45, yF = 30, zF = -1,
     xG = -50, yG = 28, zG = -1,
     xH = -45, yH = 28, zH = -1;
-  
+
 // Define as cores de cada bloco e armazena na matriz
 function cores()
 {    
@@ -96,6 +98,7 @@ function getGLContext(canvas)
 {
     let gl = canvas.getContext("webgl");
     gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.POLYGON_OFFSET_FILL);
     return gl;
 }
 
@@ -152,7 +155,14 @@ function getData()
         ...p.g, ...p.c, ...p.e,
         //Right
         ...p.b, ...p.f, ...p.d,
-        ...p.h, ...p.d, ...p.f
+        ...p.h, ...p.d, ...p.f,
+
+        ...p.a, ...p.e, ...p.f, ...p.b, 
+        ...p.a, ...p.c, ...p.g, ...p.e,
+        ...p.a, ...p.b, ...p.d, ...p.c,
+        ...p.a, ...p.e, ...p.f, ...p.h, ...p.g, ...p.e,
+        ...p.g, ...p.h, ...p.d, ...p.c, ...p.g,
+        ...p.h, ...p.f, ...p.b, ...p.d, ...p.h
     ];    
  
     
@@ -208,9 +218,8 @@ async function main()
     // 7.3 - MODEL MATRIX UNIFORM
     block = mat4.create();
     modelUniform = gl.getUniformLocation(shaderProgram, "model");
-    // gl.uniformMatrix4fv(modelUniform, false, model);
     
-    table = mat4.fromTranslation([], tablePos);
+    //table = mat4.fromTranslation([], tablePos);
 
     
     // 7.4 - COLOR UNIFORM
@@ -242,10 +251,13 @@ function render()
     gl.uniformMatrix4fv(modelUniform, false, block);
     gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
     gl.drawArrays(gl.TRIANGLES, 0, 36);
+    gl.polygonOffset(1, 1);
+    gl.uniform3f(colorUniform, 0, 0, 0);
+    gl.drawArrays(gl.LINE_STRIP, 36, 28);
 
-    gl.uniformMatrix4fv(modelUniform, false, table);
-    gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
-    gl.drawArrays(gl.TRIANGLES, 0, 36);
+    // gl.uniformMatrix4fv(modelUniform, false, table);
+    // gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
+    // gl.drawArrays(gl.TRIANGLES, 0, 36);
         
    window.requestAnimationFrame(main);
 }
