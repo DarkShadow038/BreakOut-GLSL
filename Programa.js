@@ -300,6 +300,7 @@ async function main()
 
     // 8 - Chamar o loop de redesenho
     render();
+    breakBlock();
 }
 
 function render() 
@@ -324,34 +325,39 @@ function render()
         blockX = 0,
         blockY = 0;
 
-    while (i < maxBlocks) 
+    while (i <= maxBlocks) 
     {
         if(blockActive)
         {
             showBlock[i] = true;
         }
 
-        if(showBlock[i] === true)
+        if(i === 0)
         {
-            block[i] = mat4.fromTranslation([], blockPos);
-
-            gl.uniformMatrix4fv(modelUniform, false, block[i]);
-            gl.uniform3f(colorUniform, 1, 0, 0);
-            gl.drawArrays(gl.TRIANGLES, 0, 36);
-            gl.polygonOffset(1, 1);
-            gl.uniform3f(colorUniform, 0, 0, 0);
-            gl.drawArrays(gl.LINE_STRIP, 36, 28);
-
-        }
-        if(i % 20 === 0)
-        {
-            blockY -= 2;
-            blockX = 0;
+            block[i] = mat4.create();
         }
         else
-        {            
-            
-            blockX += 5;
+        {
+            if(showBlock[i] === true)
+            {
+                block[i] = mat4.fromTranslation([], blockPos);
+
+                gl.uniformMatrix4fv(modelUniform, false, block[i]);
+                gl.uniform3f(colorUniform, 1, 0, 0);
+                gl.drawArrays(gl.TRIANGLES, 0, 36);
+                gl.polygonOffset(1, 1);
+                gl.uniform3f(colorUniform, 0, 0, 0);
+                gl.drawArrays(gl.LINE_STRIP, 36, 28);
+            }
+            if(i % 20 === 0)
+            {
+                blockY -= 2;
+                blockX = 0;
+            }
+            else
+            {   
+                blockX += 5;
+            }
         }
 
         blockPos[0] = blockX;
@@ -379,7 +385,6 @@ function render()
     gl.uniform3f(colorUniform, 0, 0, 0);
     gl.drawArrays(gl.LINE_STRIP, 164, 28);
 
-    ballX++;
     ballY++;
 
     ballPos[0] = ballX;
@@ -388,6 +393,33 @@ function render()
    window.requestAnimationFrame(main);
 }
 
+function breakBlock()
+{
+    let x1Block,
+        x2Block,
+        y1Block,
+        y2Block,
+
+        x1Ball = ballPos[0] - 1,
+        x2Ball = ballPos[0] + 1,
+        y1Ball = ballPos[1] - 28,
+        y2Ball = ballPos[1] - 30;
+
+    for(let i = 1; i <= maxBlocks; i++)
+    {   
+        x1Block = block[i][12] - 50;
+        x2Block = block[i][12] - 45;
+        y1Block = block[i][13] + 30;
+        y2Block = block[i][13] + 28;
+
+        if(x1Block < x1Ball && x1Ball < x2Block && y1Block > y1Ball && y1Ball > y2Block)
+        {            
+            showBlock[i] = false;
+        }
+    }
+
+    
+}
 function cam()
 {      
     // Define se o frame aumenta ou diminui
@@ -461,8 +493,8 @@ function activeButton()
                 }
                 break;
             case 87:
-                showBlock[5] = false;
-                alert(block[0]/*[12] + " " + block[0][13]*/);
+                showBlock[100] = false;
+                alert(block[1][12]/*[12] + " " + block[0][13]*/);
                 break;
             case 37:
                 tablePos[0] -= 3;
