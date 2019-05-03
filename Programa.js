@@ -2,6 +2,16 @@
 
 let {mat4, vec4, vec3, vec2} = glMatrix;
 
+const ballSpeed = 2,
+      tableSpeed = 2;
+
+const COS_45 = Math.cos(Math.PI * 0.25);
+
+let ku = 0, 
+    kd = 0, 
+    kl = 0, 
+    kr = 0;
+
 let i = 1,
     j = 1,
     k = 1,    
@@ -34,7 +44,9 @@ let i = 1,
     ball,
     ballPos = [0, 0, 0],
     ballX = 0,
-    ballY = 0,   
+    ballY = 0,
+    reverseBallX = true,   
+    reverseBallY = true,
     viewUniform,
     view,
     eye,
@@ -301,6 +313,7 @@ async function main()
     // 8 - Chamar o loop de redesenho
     render();
     breakBlock();
+    hitTable();
 }
 
 function render() 
@@ -368,6 +381,11 @@ function render()
 
     blockActive = false;
 
+
+    let hor = (kl + kr) * tableSpeed;
+
+    tablePos[0] += hor;
+
     table = mat4.fromTranslation([], tablePos);
     gl.uniformMatrix4fv(modelUniform, false, table);
     gl.uniform3f(colorUniform, 0, 1, 1);
@@ -385,12 +403,42 @@ function render()
     gl.uniform3f(colorUniform, 0, 0, 0);
     gl.drawArrays(gl.LINE_STRIP, 164, 28);
 
-    ballY++;
+    inverseBall();
 
-    ballPos[0] = ballX;
-    ballPos[1] = ballY;
+    //ballPos[0] = ballX * SPEED;
+    ballPos[1] = ballY * ballSpeed;
         
    window.requestAnimationFrame(main);
+}
+
+function hitTable()
+{
+    let x1Table = tablePos[0] - 5,
+        x2Table = tablePos[0] + 5,
+        y1Table = tablePos[1] - 30,
+        y2Table = tablePos[1] - 32,
+
+        x1Ball = ballPos[0] - 1,
+        x2Ball = ballPos[0] + 1,
+        y1Ball = ballPos[1] - 28,
+        y2Ball = ballPos[1] - 30;
+
+    if(x1Ball === x2Table && ((y1Ball > y1Table && y1Ball < y2Table ) || (y2Ball < y2Table && y2Ball > y1Table)))
+    {
+        reverseBallX = true;  
+    }
+    if(x2Ball === x1Table && ((y1Ball > y1Table && y1Ball < y2Table ) || (y2Ball < y2Table && y2Ball > y1Table)))
+    {
+        reverseBallX = false;  
+    }
+    if(y1Ball === y2Table && ((x1Ball > x1Table && x1Ball < x2Table ) || (x2Ball < x2Table && x2Ball > x1Table)))
+    {
+        reverseBallY = false;  
+    }
+    if(y2Ball === y1Table && ((x1Ball > x1Table && x1Ball < x2Table ) || (x2Ball < x2Table && x2Ball > x1Table)))
+    {
+        reverseBallY = true;  
+    }
 }
 
 function breakBlock()
@@ -412,14 +460,53 @@ function breakBlock()
         y1Block = block[i][13] + 30;
         y2Block = block[i][13] + 28;
 
-        if(x1Block < x1Ball && x1Ball < x2Block && y1Block > y1Ball && y1Ball > y2Block)
-        {            
-            showBlock[i] = false;
+        if(showBlock[i] === true)
+        {
+            if(x1Ball === x2Block && ((y1Ball > y1Block && y1Ball < y2Block ) || (y2Ball < y2Block && y2Ball > y1Block)))
+            {
+                reverseBallX = true;  
+                showBlock[i] = false;
+            }
+            if(x2Ball === x1Block && ((y1Ball > y1Block && y1Ball < y2Block ) || (y2Ball < y2Block && y2Ball > y1Block)))
+            {
+                reverseBallX = false;  
+                showBlock[i] = false;
+            }
+            if(y1Ball === y2Block && ((x1Ball > x1Block && x1Ball < x2Block ) || (x2Ball < x2Block && x2Ball > x1Block)))
+            {
+                reverseBallY = false;  
+                showBlock[i] = false;
+            }
+            if(y2Ball === y1Block && ((x1Ball > x1Block && x1Ball < x2Block ) || (x2Ball < x2Block && x2Ball > x1Block)))
+            {
+                reverseBallY = true;  
+                showBlock[i] = false;
+            }
         }
+    }    
+}
+
+function inverseBall()
+{
+    if(reverseBallY == true)
+    {
+        ballY++;
+    }
+    else
+    {
+        ballY--;
     }
 
-    
+    if(reverseBallX == true)
+    {
+        ballX++;
+    }
+    else
+    {
+        ballX--;
+    }
 }
+
 function cam()
 {      
     // Define se o frame aumenta ou diminui
@@ -493,8 +580,7 @@ function activeButton()
                 }
                 break;
             case 87:
-                showBlock[100] = false;
-                alert(block[1][12]/*[12] + " " + block[0][13]*/);
+                alert(document.getElementsByTagName("canvas")[0].height);
                 break;
             case 37:
                 tablePos[0] -= 3;
@@ -506,5 +592,24 @@ function activeButton()
     }
 }
 
+function keyUp(evt){
+    if(evt.key === "ArrowDown") return kd = 0;
+    if(evt.key === "ArrowUp") return ku = 0;
+    if(evt.key === "ArrowLeft") return kl = 0;
+    if(evt.key === "ArrowRight") return kr = 0;
+}
+
+function keyDown(evt){
+    if(evt.key === "ArrowDown") return kd = -3;
+    if(evt.key === "ArrowUp") return ku = 3;
+    if(evt.key === "ArrowLeft") return kl = -3;
+    if(evt.key === "ArrowRight") return kr = 3;
+    
+}
+
 window.addEventListener("load", main);
-window.addEventListener("keydown", activeButton)
+//window.addEventListener("keydown", activeButton)
+
+
+window.addEventListener("keyup", keyUp);
+window.addEventListener("keydown", keyDown);
