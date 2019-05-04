@@ -2,8 +2,8 @@
 
 let {mat4, vec4, vec3, vec2} = glMatrix;
 
-const ballSpeed = 2,
-      tableSpeed = 2;
+const ballSpeed = 1,
+      tableSpeed = 1;
 
 const COS_45 = Math.cos(Math.PI * 0.25);
 
@@ -11,6 +11,9 @@ let ku = 0,
     kd = 0, 
     kl = 0, 
     kr = 0;
+
+let milli = 0;
+const freq = 1000 / 60;
 
 let i = 1,
     j = 1,
@@ -45,6 +48,7 @@ let i = 1,
     ballPos = [0, 0, 0],
     ballX = 0,
     ballY = 0,
+    wallPos = [0, 0, 0],
     reverseBallX = true,   
     reverseBallY = true,
     viewUniform,
@@ -84,8 +88,25 @@ let i = 1,
     xEb = -1, yEb = -28, zEb = -1,
     xFb =  1, yFb = -28, zFb = -1,
     xGb = -1, yGb = -30, zGb = -1,
-    xHb =  1, yHb = -30, zHb = -1;
-
+    xHb =  1, yHb = -30, zHb = -1.
+    
+    xAw = -68, yAw = 65, zAw =0.1,
+    xBw = -66, yBw = 65, zBw =0.1,
+    xCw = -68, yCw =-65, zCw =0.1,
+    xDw = -66, yDw =-65, zDw =0.1,
+    xEw = -68, yEw = 65, zEw =-0.1,
+    xFw = -66, yFw = 65, zFw =-0.1,
+    xGw = -68, yGw =-65, zGw =-0.1,
+    xHw = -66, yHw =-65, zHw =-0.1,
+    
+    xAw2 = -68, yAw2 = 38, zAw2 =0.1,
+    xBw2 =  68, yBw2 = 38, zBw2 =0.1,
+    xCw2 = -68, yCw2 = 36, zCw2 =0.1,
+    xDw2 =  68, yDw2 = 36, zDw2 =0.1,
+    xEw2 = -68, yEw2 = 38, zEw2 =-0.1,
+    xFw2 =  68, yFw2 = 38, zFw2 =-0.1,
+    xGw2 = -68, yGw2 = 36, zGw2 =-0.1,
+    xHw2 =  68, yHw2 = 36, zHw2 =-0.1;
 
 function resize() 
 {
@@ -168,6 +189,24 @@ function getData()
             fb: [xFb, yFb, zFb],
             gb: [xGb, yGb, zGb], 
             hb: [xHb, yHb, zHb],
+            
+            aw: [xAw, yAw, zAw], 
+            bw: [xBw, yBw, zBw],
+            cw: [xCw, yCw, zCw],
+            dw: [xDw, yDw, zDw],
+            ew: [xEw, yEw, zEw], 
+            fw: [xFw, yFw, zFw],
+            gw: [xGw, yGw, zGw], 
+            hw: [xHw, yHw, zHw],
+
+            aw2: [xAw2, yAw2, zAw2], 
+            bw2: [xBw2, yBw2, zBw2],
+            cw2: [xCw2, yCw2, zCw2],
+            dw2: [xDw2, yDw2, zDw2],
+            ew2: [xEw2, yEw2, zEw2], 
+            fw2: [xFw2, yFw2, zFw2],
+            gw2: [xGw2, yGw2, zGw2], 
+            hw2: [xHw2, yHw2, zHw2],
     };        
             // A cada loop, adiciona no final da matriz todos os novos pontos
     let faces =  [
@@ -251,7 +290,63 @@ function getData()
         ...p.ab, ...p.bb, ...p.db, ...p.cb,
         ...p.ab, ...p.eb, ...p.fb, ...p.hb, ...p.gb, ...p.eb,
         ...p.gb, ...p.hb, ...p.db, ...p.cb, ...p.gb,
-        ...p.hb, ...p.fb, ...p.bb, ...p.db, ...p.hb
+        ...p.hb, ...p.fb, ...p.bb, ...p.db, ...p.hb,
+        //_______________//
+
+
+        //Front            
+        ...p.aw, ...p.bw, ...p.cw,
+        ...p.dw, ...p.cw, ...p.bw,
+        //Back
+        ...p.ew, ...p.fw, ...p.gw,
+        ...p.hw, ...p.gw, ...p.fw,
+        //Top
+        ...p.ew, ...p.fw, ...p.aw,
+        ...p.bw, ...p.aw, ...p.fw,
+        //Down
+        ...p.gw, ...p.hw, ...p.cw,
+        ...p.dw, ...p.cw, ...p.hw,
+        //Left
+        ...p.aw, ...p.ew, ...p.cw,
+        ...p.gw, ...p.cw, ...p.ew,
+        //Right
+        ...p.bw, ...p.fw, ...p.dw,
+        ...p.hw, ...p.dw, ...p.fw,
+
+        ...p.aw, ...p.ew, ...p.fw, ...p.bw, 
+        ...p.aw, ...p.cw, ...p.gw, ...p.ew,
+        ...p.aw, ...p.bw, ...p.dw, ...p.cw,
+        ...p.aw, ...p.ew, ...p.fw, ...p.hw, ...p.gw, ...p.ew,
+        ...p.gw, ...p.hw, ...p.dw, ...p.cw, ...p.gw,
+        ...p.hw, ...p.fw, ...p.bw, ...p.dw, ...p.hw,
+        //_______________//
+
+
+        //Front            
+        ...p.aw2, ...p.bw2, ...p.cw2,
+        ...p.dw2, ...p.cw2, ...p.bw2,
+        //Back
+        ...p.ew2, ...p.fw2, ...p.gw2,
+        ...p.hw2, ...p.gw2, ...p.fw2,
+        //Top
+        ...p.ew2, ...p.fw2, ...p.aw2,
+        ...p.bw2, ...p.aw2, ...p.fw2,
+        //Down
+        ...p.gw2, ...p.hw2, ...p.cw2,
+        ...p.dw2, ...p.cw2, ...p.hw2,
+        //Left
+        ...p.aw2, ...p.ew2, ...p.cw2,
+        ...p.gw2, ...p.cw2, ...p.ew2,
+        //Right
+        ...p.bw2, ...p.fw2, ...p.dw2,
+        ...p.hw2, ...p.dw2, ...p.fw2,
+
+        ...p.aw2, ...p.ew2, ...p.fw2, ...p.bw2, 
+        ...p.aw2, ...p.cw2, ...p.gw2, ...p.ew2,
+        ...p.aw2, ...p.bw2, ...p.dw2, ...p.cw2,
+        ...p.aw2, ...p.ew2, ...p.fw2, ...p.hw2, ...p.gw2, ...p.ew2,
+        ...p.gw2, ...p.hw2, ...p.dw2, ...p.cw2, ...p.gw2,
+        ...p.hw2, ...p.fw2, ...p.bw2, ...p.dw2, ...p.hw2
     ];    
  
     
@@ -314,10 +409,17 @@ async function main()
     render();
     breakBlock();
     hitTable();
+    hitWall();
 }
 
 function render() 
 {
+    let newMilli = new Date().getMilliseconds();
+    let diff = (newMilli - milli) / freq;
+    milli = newMilli;
+
+
+
     if (active)
     {
         cam();
@@ -403,11 +505,27 @@ function render()
     gl.uniform3f(colorUniform, 0, 0, 0);
     gl.drawArrays(gl.LINE_STRIP, 164, 28);
 
+    wall = mat4.create();
+    gl.uniformMatrix4fv(modelUniform, false, wall);
+    gl.uniform3f(colorUniform, 1, 1, 0);
+    gl.drawArrays(gl.TRIANGLES, 192, 36);
+    
+    wallPos[0] = 134;
+    wall = mat4.fromTranslation([], wallPos);
+    gl.uniformMatrix4fv(modelUniform, false, wall);
+    gl.uniform3f(colorUniform, 1, 1, 0);
+    gl.drawArrays(gl.TRIANGLES, 192, 36);
+    
+    wall2 = mat4.create();
+    gl.uniformMatrix4fv(modelUniform, false, wall2);
+    gl.uniform3f(colorUniform, 1, 1, 0);
+    gl.drawArrays(gl.TRIANGLES, 256, 36);
+
     inverseBall();
 
-    //ballPos[0] = ballX * SPEED;
+    ballPos[0] = ballX * ballSpeed;
     ballPos[1] = ballY * ballSpeed;
-        
+
    window.requestAnimationFrame(main);
 }
 
@@ -423,20 +541,17 @@ function hitTable()
         y1Ball = ballPos[1] - 28,
         y2Ball = ballPos[1] - 30;
 
-    if(x1Ball === x2Table && ((y1Ball > y1Table && y1Ball < y2Table ) || (y2Ball < y2Table && y2Ball > y1Table)))
+    if(y2Ball === y1Table)
     {
-        reverseBallX = true;  
-    }
-    if(x2Ball === x1Table && ((y1Ball > y1Table && y1Ball < y2Table ) || (y2Ball < y2Table && y2Ball > y1Table)))
-    {
-        reverseBallX = false;  
-    }
-    if(y1Ball === y2Table && ((x1Ball > x1Table && x1Ball < x2Table ) || (x2Ball < x2Table && x2Ball > x1Table)))
-    {
-        reverseBallY = false;  
-    }
-    if(y2Ball === y1Table && ((x1Ball > x1Table && x1Ball < x2Table ) || (x2Ball < x2Table && x2Ball > x1Table)))
-    {
+        if((x2Ball - 1 < x2Table) && (x2Ball - 1 >= x2Table - 5))
+        {
+            reverseBallX = false;
+        }
+        else if((x2Ball - 1 > x2Table) && (x2Ball - 1 <= x2Table - 5))
+        {
+            reverseBallX = true;
+        }
+        
         reverseBallY = true;  
     }
 }
@@ -484,6 +599,31 @@ function breakBlock()
             }
         }
     }    
+}
+
+function hitWall()
+{
+    let leftWall = xBw,
+        rightWall = xBw + 132
+        topWall = yCw2
+
+        x1Ball = ballPos[0] - 1,
+        x2Ball = ballPos[0] + 1,
+        y1Ball = ballPos[1] - 28,
+        y2Ball = ballPos[1] - 30;
+
+    if(x1Ball === leftWall)
+    {
+        reverseBallX = true;  
+    }
+    if(x2Ball === rightWall)
+    {
+        reverseBallX = false;  
+    }
+    if(y1Ball === topWall)
+    {
+        reverseBallY = false;  
+    }
 }
 
 function inverseBall()
