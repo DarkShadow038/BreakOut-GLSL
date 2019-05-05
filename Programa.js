@@ -541,13 +541,13 @@ function hitTable()
         y1Ball = ballPos[1] - 28,
         y2Ball = ballPos[1] - 30;
 
-    if(y2Ball === y1Table)
+    if(y2Ball === y1Table && x2Ball <= x2Table && x2Ball >= x1Table)
     {
-        if((x2Ball - 1 < x2Table) && (x2Ball - 1 >= x2Table - 5))
+        if((x2Ball < x2Table && x2Ball >= 5))
         {
             reverseBallX = false;
         }
-        else if((x2Ball - 1 > x2Table) && (x2Ball - 1 <= x2Table - 5))
+        else if((x2Ball > x1Table) && (x2Ball <= 5))
         {
             reverseBallX = true;
         }
@@ -577,22 +577,24 @@ function breakBlock()
 
         if(showBlock[i] === true)
         {
-            if(x1Ball === x2Block && ((y1Ball > y1Block && y1Ball < y2Block ) || (y2Ball < y2Block && y2Ball > y1Block)))
+            if(x1Ball === x2Block && ((y1Ball <= y1Block && y1Ball >= y2Block ) || (y2Ball >= y2Block && y2Ball <= y1Block)))
             {
                 reverseBallX = true;  
                 showBlock[i] = false;
             }
-            if(x2Ball === x1Block && ((y1Ball > y1Block && y1Ball < y2Block ) || (y2Ball < y2Block && y2Ball > y1Block)))
+            else if(x2Ball === x1Block && ((y1Ball <= y1Block && y1Ball >= y2Block ) || (y2Ball >= y2Block && y2Ball <= y1Block)))
             {
                 reverseBallX = false;  
                 showBlock[i] = false;
             }
-            if(y1Ball === y2Block && ((x1Ball > x1Block && x1Ball < x2Block ) || (x2Ball < x2Block && x2Ball > x1Block)))
+            // Acerta o bloco em baixo
+            else if(y1Ball === y2Block && ((x1Ball > x1Block && x1Ball < x2Block ) || (x2Ball < x2Block && x2Ball > x1Block)))
             {
                 reverseBallY = false;  
                 showBlock[i] = false;
             }
-            if(y2Ball === y1Block && ((x1Ball > x1Block && x1Ball < x2Block ) || (x2Ball < x2Block && x2Ball > x1Block)))
+            // Acerta o bloco em cima
+            else if(y2Ball === y1Block && ((x1Ball > x1Block && x1Ball < x2Block ) || (x2Ball < x2Block && x2Ball > x1Block)))
             {
                 reverseBallY = true;  
                 showBlock[i] = false;
