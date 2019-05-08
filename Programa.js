@@ -7,13 +7,9 @@ const ballSpeed = 1,
 
 const COS_45 = Math.cos(Math.PI * 0.25);
 
-let ku = 0, 
-    kd = 0, 
-    kl = 0, 
+let kl = 0, 
     kr = 0;
 
-let milli = 0;
-const freq = 1000 / 60;
 
 let i = 1,
     j = 1,
@@ -414,12 +410,6 @@ async function main()
 
 function render() 
 {
-    let newMilli = new Date().getMilliseconds();
-    let diff = (newMilli - milli) / freq;
-    milli = newMilli;
-
-
-
     if (active)
     {
         cam();
@@ -484,10 +474,6 @@ function render()
     blockActive = false;
 
 
-    let hor = (kl + kr) * tableSpeed;
-
-    tablePos[0] += hor;
-
     table = mat4.fromTranslation([], tablePos);
     gl.uniformMatrix4fv(modelUniform, false, table);
     gl.uniform3f(colorUniform, 0, 1, 1);
@@ -495,7 +481,6 @@ function render()
     gl.polygonOffset(1, 1);
     gl.uniform3f(colorUniform, 0, 0, 0);
     gl.drawArrays(gl.LINE_STRIP, 100, 28);
-
 
     ball = mat4.fromTranslation([], ballPos);
     gl.uniformMatrix4fv(modelUniform, false, ball);
@@ -577,11 +562,13 @@ function breakBlock()
 
         if(showBlock[i] === true)
         {
+            // Acerta o bloco na direita
             if(x1Ball === x2Block && ((y1Ball <= y1Block && y1Ball >= y2Block ) || (y2Ball >= y2Block && y2Ball <= y1Block)))
             {
                 reverseBallX = true;  
                 showBlock[i] = false;
             }
+            // Acerta o bloco na esquerda
             else if(x2Ball === x1Block && ((y1Ball <= y1Block && y1Ball >= y2Block ) || (y2Ball >= y2Block && y2Ball <= y1Block)))
             {
                 reverseBallX = false;  
@@ -606,8 +593,8 @@ function breakBlock()
 function hitWall()
 {
     let leftWall = xBw,
-        rightWall = xBw + 132
-        topWall = yCw2
+        rightWall = xBw + 132,
+        topWall = yCw2,
 
         x1Ball = ballPos[0] - 1,
         x2Ball = ballPos[0] + 1,
@@ -721,9 +708,6 @@ function activeButton()
                     active = true;
                 }
                 break;
-            case 87:
-                alert(document.getElementsByTagName("canvas")[0].height);
-                break;
             case 37:
                 tablePos[0] -= 3;
                 break;
@@ -734,24 +718,21 @@ function activeButton()
     }
 }
 
-function keyUp(evt){
-    if(evt.key === "ArrowDown") return kd = 0;
-    if(evt.key === "ArrowUp") return ku = 0;
-    if(evt.key === "ArrowLeft") return kl = 0;
-    if(evt.key === "ArrowRight") return kr = 0;
-}
-
-function keyDown(evt){
-    if(evt.key === "ArrowDown") return kd = -3;
-    if(evt.key === "ArrowUp") return ku = 3;
-    if(evt.key === "ArrowLeft") return kl = -3;
-    if(evt.key === "ArrowRight") return kr = 3;
+function keyDown(evt)
+{
+    if(evt.key === "ArrowLeft" && tablePos[0] > -60)
+    {
+         tablePos[0] -= 3;
+    }
     
+    if(evt.key === "ArrowRight" && tablePos[0] < 60) 
+    {
+        tablePos[0] += 3;  
+    }
 }
 
 window.addEventListener("load", main);
 //window.addEventListener("keydown", activeButton)
 
 
-window.addEventListener("keyup", keyUp);
 window.addEventListener("keydown", keyDown);
