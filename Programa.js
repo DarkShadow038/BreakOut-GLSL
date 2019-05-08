@@ -543,6 +543,7 @@ function hitTable()
 
 function breakBlock()
 {
+    let rand = Math.round(Math.random()*100);
     let x1Block,
         x2Block,
         y1Block,
@@ -567,24 +568,44 @@ function breakBlock()
             {
                 reverseBallX = true;  
                 showBlock[i] = false;
+
+                if (rand < 25)
+                {
+                    active = true;
+                }
             }
             // Acerta o bloco na esquerda
             else if(x2Ball === x1Block && ((y1Ball <= y1Block && y1Ball >= y2Block ) || (y2Ball >= y2Block && y2Ball <= y1Block)))
             {
                 reverseBallX = false;  
                 showBlock[i] = false;
+
+                if (rand < 25)
+                {
+                    active = true;
+                }
             }
             // Acerta o bloco em baixo
             else if(y1Ball === y2Block && ((x1Ball > x1Block && x1Ball < x2Block ) || (x2Ball < x2Block && x2Ball > x1Block)))
             {
                 reverseBallY = false;  
                 showBlock[i] = false;
+
+                if (rand < 25)
+                {
+                    active = true;
+                }
             }
             // Acerta o bloco em cima
             else if(y2Ball === y1Block && ((x1Ball > x1Block && x1Ball < x2Block ) || (x2Ball < x2Block && x2Ball > x1Block)))
             {
                 reverseBallY = true;  
                 showBlock[i] = false;
+
+                if (rand < 25)
+                {
+                    active = true;
+                }
             }
         }
     }    
