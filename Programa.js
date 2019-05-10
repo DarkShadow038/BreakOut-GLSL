@@ -27,6 +27,10 @@ let i = 1,
     data,
     positionAttr,
     positionBuffer,
+    normalAttr,
+    normalBuffer,
+    normalAttr2,
+    normalBuffer2,
     width,
     height,
     projectionUniform,
@@ -344,9 +348,44 @@ function getData()
         ...p.gw2, ...p.hw2, ...p.dw2, ...p.cw2, ...p.gw2,
         ...p.hw2, ...p.fw2, ...p.bw2, ...p.dw2, ...p.hw2
     ];    
- 
+
+    let n = {
+        frente: [0,0,-1],
+        topo: [0,1,0],
+        baixo: [0,-1,0],
+        esquerda: [-1,0,0],
+        direita: [1,0,0],
+        fundo: [0,0,1],
+      };
     
-    return {"points" : new Float32Array(faces)};
+      let faceNormals = {
+        frente: [...n.frente, ...n.frente, ...n.frente, ...n.frente, ...n.frente, ...n.frente],
+        topo: [...n.topo, ...n.topo, ...n.topo, ...n.topo, ...n.topo, ...n.topo],
+        baixo: [...n.baixo, ...n.baixo, ...n.baixo, ...n.baixo, ...n.baixo, ...n.baixo],
+        esquerda: [...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda],
+        direita: [...n.direita, ...n.direita, ...n.direita, ...n.direita, ...n.direita, ...n.direita],
+        fundo: [...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo],
+      };
+    
+      let normals = [
+        ...faceNormals.frente,
+        ...faceNormals.topo,
+        ...faceNormals.baixo,
+        ...faceNormals.esquerda,
+        ...faceNormals.direita,
+        ...faceNormals.fundo
+      ];
+
+      let normals2 = [
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0]
+      ];
+
+    return {"points" : new Float32Array(faces), "normals": new Float32Array(normals), "normals2": new Float32Array(normals2)};
 }
 
 async function main() 
@@ -360,13 +399,13 @@ async function main()
     // 3 - Ler os arquivos de shader
     vertexShaderSource = await fetch("Vertex.glsl").then(r => r.text());
     console.log("VERTEX", vertexShaderSource);
+
     fragmentShaderSource = await fetch("Fragment.glsl").then(r => r.text());
     console.log("FRAGMENT", fragmentShaderSource);
 
     // 4 - Compilar arquivos de shader
     vertexShader = compileShader(vertexShaderSource, gl.VERTEX_SHADER, gl);
     fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER, gl);
-    
 
     // 5 - Linkar o programa de shader
     shaderProgram = linkProgram(vertexShader, fragmentShader, gl);
@@ -382,6 +421,20 @@ async function main()
     gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(positionAttr);
     gl.vertexAttribPointer(positionAttr, 3, gl.FLOAT, false, 0, 0);
+
+    normalAttr = gl.getAttribLocation(shaderProgram, "normal");
+    normalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, data.normals, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(normalAttr);
+    gl.vertexAttribPointer(normalAttr, 3, gl.FLOAT, false, 0, 0);
+
+    normalAttr2 = gl.getAttribLocation(shaderProgram, "normal2");
+    normalBuffer2 = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer2);
+    gl.bufferData(gl.ARRAY_BUFFER, data.normals2, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(normalAttr2);
+    gl.vertexAttribPointer(normalAttr2, 3, gl.FLOAT, false, 0, 0);
 
     // 7.1 - PROJECTION MATRIX UNIFORM
     resize();
@@ -450,7 +503,7 @@ function render()
                 gl.uniformMatrix4fv(modelUniform, false, block[i]);
                 gl.uniform3f(colorUniform, 1, 0, 0);
                 gl.drawArrays(gl.TRIANGLES, 0, 36);
-                gl.polygonOffset(1, 1);
+                gl.polygonOffset(-1, -1);
                 gl.uniform3f(colorUniform, 0, 0, 0);
                 gl.drawArrays(gl.LINE_STRIP, 36, 28);
             }
