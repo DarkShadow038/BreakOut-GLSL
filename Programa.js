@@ -2,7 +2,7 @@
 
 let {mat4, vec4, vec3, vec2} = glMatrix;
 
-const ballSpeed = 1,
+const ballSpeed = 0.5,
       tableSpeed = 1;
 
 const COS_45 = Math.cos(Math.PI * 0.25);
@@ -403,13 +403,24 @@ async function main()
 
     // 8 - Chamar o loop de redesenho
     render();
-    breakBlock();
-    hitTable();
-    hitWall();
 }
 
 function render() 
 {
+    let hor = (kl + kr) * tableSpeed;
+    
+   
+        tablePos[0] += hor;
+
+
+    if(tablePos[0] < -60){
+        tablePos[0] = -60;
+    }
+    if(tablePos[0] > 60){
+        tablePos[0] = 60;
+    }
+
+
     if (active)
     {
         cam();
@@ -511,7 +522,10 @@ function render()
     ballPos[0] = ballX * ballSpeed;
     ballPos[1] = ballY * ballSpeed;
 
-   window.requestAnimationFrame(main);
+    breakBlock();
+    hitTable();
+    hitWall();
+   window.requestAnimationFrame(render);
 }
 
 function hitTable()
@@ -526,7 +540,7 @@ function hitTable()
         y1Ball = ballPos[1] - 28,
         y2Ball = ballPos[1] - 30;
 
-    if(y2Ball === y1Table && x2Ball <= x2Table && x2Ball >= x1Table)
+    if(y2Ball <= y1Table  && y1Ball >= y2Table &&x2Ball <= x2Table && x2Ball >= x1Table)
     {
         if((x2Ball < x2Table && x2Ball >= 5))
         {
@@ -622,15 +636,15 @@ function hitWall()
         y1Ball = ballPos[1] - 28,
         y2Ball = ballPos[1] - 30;
 
-    if(x1Ball === leftWall)
+    if(x1Ball <= leftWall)
     {
         reverseBallX = true;  
     }
-    if(x2Ball === rightWall)
+    if(x2Ball >= rightWall)
     {
         reverseBallX = false;  
     }
-    if(y1Ball === topWall)
+    if(y1Ball >= topWall)
     {
         reverseBallY = false;  
     }
@@ -739,21 +753,22 @@ function activeButton()
     }
 }
 
-function keyDown(evt)
-{
-    if(evt.key === "ArrowLeft" && tablePos[0] > -60)
-    {
-         tablePos[0] -= 3;
-    }
+function keyUp(evt){
+    if(evt.key === "a") return kl = 0;
+    if(evt.key === "d") return kr = 0;
+}
+
+function keyPress(evt){
     
-    if(evt.key === "ArrowRight" && tablePos[0] < 60) 
-    {
-        tablePos[0] += 3;  
+    if(evt.key === "a") {
+        return kl = -1;
+    }
+    if(evt.key === "d") {
+        return kr = 1;
     }
 }
 
 window.addEventListener("load", main);
-//window.addEventListener("keydown", activeButton)
 
-
-window.addEventListener("keydown", keyDown);
+window.addEventListener("keyup", keyUp);
+window.addEventListener("keypress", keyPress);
