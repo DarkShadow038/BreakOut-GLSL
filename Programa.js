@@ -34,7 +34,7 @@ let i = 1,
     loc = [0, 0, 0],
     modelUniform,
     block = [],
-    maxBlocks = 200,
+    maxBlocks = 100,
     showBlock = [],
     blockActive = true,
     blockPos = [0, 0, 0],
@@ -690,7 +690,7 @@ function breakBlock()
                 reverseBallX = true;  
                 showBlock[i] = false;
 
-                if (rand < 50)
+                if (rand < 25)
                 {
                     active = true;
                 }
@@ -701,7 +701,7 @@ function breakBlock()
                 reverseBallX = false;  
                 showBlock[i] = false;
 
-                if (rand < 50)
+                if (rand < 25)
                 {
                     active = true;
                 }
@@ -712,7 +712,7 @@ function breakBlock()
                 reverseBallY = false;  
                 showBlock[i] = false;
 
-                if (rand < 50)
+                if (rand < 25)
                 {
                     active = true;
                 }
@@ -723,7 +723,7 @@ function breakBlock()
                 reverseBallY = true;  
                 showBlock[i] = false;
 
-                if (rand < 50)
+                if (rand < 25)
                 {
                     active = true;
                 }
