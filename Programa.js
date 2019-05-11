@@ -34,7 +34,7 @@ let i = 1,
     loc = [0, 0, 0],
     modelUniform,
     block = [],
-    maxBlocks = 100,
+    maxBlocks = 200,
     showBlock = [],
     blockActive = true,
     blockPos = [0, 0, 0],
@@ -165,7 +165,7 @@ function getData()
             d: [xD, yD, zD],
             e: [xE, yE, zE], 
             f: [xF, yF, zF],
-            g: [xG, yG, zG], 
+            g: [xG, yG, zG],             
             h: [xH, yH, zH],
 
             at: [xAt, yAt, zAt], 
@@ -344,9 +344,109 @@ function getData()
         ...p.gw2, ...p.hw2, ...p.dw2, ...p.cw2, ...p.gw2,
         ...p.hw2, ...p.fw2, ...p.bw2, ...p.dw2, ...p.hw2
     ];    
+
+    let n = {
+        frente: [0,0,1],
+        topo: [0,1,0],
+        baixo: [0,-1,0],
+        esquerda: [-1,0,0],
+        direita: [1,0,0],
+        fundo: [0,0,-1],
+      };
+    
+      let faceNormals = {
+        frente: [...n.frente, ...n.frente, ...n.frente, ...n.frente, ...n.frente, ...n.frente],
+        topo: [...n.topo, ...n.topo, ...n.topo, ...n.topo, ...n.topo, ...n.topo],
+        baixo: [...n.baixo, ...n.baixo, ...n.baixo, ...n.baixo, ...n.baixo, ...n.baixo],
+        esquerda: [...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda],
+        direita: [...n.direita, ...n.direita, ...n.direita, ...n.direita, ...n.direita, ...n.direita],
+        fundo: [...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo],
+
+        
+        frente2: [...n.frente, ...n.frente, ...n.frente, ...n.frente],
+        topo2: [...n.topo, ...n.topo, ...n.topo, ...n.topo],
+        baixo2: [...n.baixo, ...n.baixo, ...n.baixo, ...n.baixo],
+        esquerda2: [...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda],
+        direita2: [...n.direita, ...n.direita, ...n.direita, ...n.direita, ...n.direita],
+        fundo2: [...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo],
+      };
+    
+      let normals = [
+        ...faceNormals.frente,
+        ...faceNormals.fundo,
+        ...faceNormals.topo,
+        ...faceNormals.baixo,
+        ...faceNormals.esquerda,
+        ...faceNormals.direita,
+
+        ...faceNormals.frente2,
+        ...faceNormals.fundo2,
+        ...faceNormals.topo2,
+        ...faceNormals.baixo2,
+        ...faceNormals.esquerda2,
+        ...faceNormals.direita2,
+        
+        ...faceNormals.frente,
+        ...faceNormals.fundo,
+        ...faceNormals.topo,
+        ...faceNormals.baixo,
+        ...faceNormals.esquerda,
+        ...faceNormals.direita,
+
+        ...faceNormals.frente2,
+        ...faceNormals.fundo2,
+        ...faceNormals.topo2,
+        ...faceNormals.baixo2,
+        ...faceNormals.esquerda2,
+        ...faceNormals.direita2,
+        
+        ...faceNormals.frente,
+        ...faceNormals.fundo,
+        ...faceNormals.topo,
+        ...faceNormals.baixo,
+        ...faceNormals.esquerda,
+        ...faceNormals.direita,
+
+        ...faceNormals.frente2,
+        ...faceNormals.fundo2,
+        ...faceNormals.topo2,
+        ...faceNormals.baixo2,
+        ...faceNormals.esquerda2,
+        ...faceNormals.direita2,
+        
+        ...faceNormals.frente,
+        ...faceNormals.fundo,
+        ...faceNormals.topo,
+        ...faceNormals.baixo,
+        ...faceNormals.esquerda,
+        ...faceNormals.direita,
+
+        ...faceNormals.frente2,
+        ...faceNormals.fundo2,
+        ...faceNormals.topo2,
+        ...faceNormals.baixo2,
+        ...faceNormals.esquerda2,
+        ...faceNormals.direita2,
+        
+        ...faceNormals.frente,
+        ...faceNormals.fundo,
+        ...faceNormals.topo,
+        ...faceNormals.baixo,
+        ...faceNormals.esquerda,
+        ...faceNormals.direita,
+
+        ...faceNormals.frente2,
+        ...faceNormals.fundo2,
+        ...faceNormals.topo2,
+        ...faceNormals.baixo2,
+        ...faceNormals.esquerda2,
+        ...faceNormals.direita2,
+        
+        
+      ];
  
     
-    return {"points" : new Float32Array(faces)};
+    return {"points" : new Float32Array(faces), "normals": new Float32Array(normals)};
 }
 
 async function main() 
@@ -382,6 +482,13 @@ async function main()
     gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(positionAttr);
     gl.vertexAttribPointer(positionAttr, 3, gl.FLOAT, false, 0, 0);
+
+    normalAttr = gl.getAttribLocation(shaderProgram, "normal");
+    normalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, data.normals, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(normalAttr);
+    gl.vertexAttribPointer(normalAttr, 3, gl.FLOAT, false, 0, 0);
 
     // 7.1 - PROJECTION MATRIX UNIFORM
     resize();
@@ -583,7 +690,7 @@ function breakBlock()
                 reverseBallX = true;  
                 showBlock[i] = false;
 
-                if (rand < 25)
+                if (rand < 50)
                 {
                     active = true;
                 }
@@ -594,7 +701,7 @@ function breakBlock()
                 reverseBallX = false;  
                 showBlock[i] = false;
 
-                if (rand < 25)
+                if (rand < 50)
                 {
                     active = true;
                 }
@@ -605,7 +712,7 @@ function breakBlock()
                 reverseBallY = false;  
                 showBlock[i] = false;
 
-                if (rand < 25)
+                if (rand < 50)
                 {
                     active = true;
                 }
@@ -616,7 +723,7 @@ function breakBlock()
                 reverseBallY = true;  
                 showBlock[i] = false;
 
-                if (rand < 25)
+                if (rand < 50)
                 {
                     active = true;
                 }
