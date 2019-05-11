@@ -350,12 +350,12 @@ function getData()
     ];    
 
     let n = {
-        frente: [0,0,1],
+        frente: [0,0,-1],
         topo: [0,1,0],
         baixo: [0,-1,0],
         esquerda: [-1,0,0],
         direita: [1,0,0],
-        fundo: [0,0,-1],
+        fundo: [0,0,1],
       };
     
       let faceNormals = {
