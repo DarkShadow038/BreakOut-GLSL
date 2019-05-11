@@ -2,7 +2,7 @@
 
 let {mat4, vec4, vec3, vec2} = glMatrix;
 
-const ballSpeed = 1,
+const ballSpeed = 0.5,
       tableSpeed = 1;
 
 const COS_45 = Math.cos(Math.PI * 0.25);
@@ -169,7 +169,7 @@ function getData()
             d: [xD, yD, zD],
             e: [xE, yE, zE], 
             f: [xF, yF, zF],
-            g: [xG, yG, zG], 
+            g: [xG, yG, zG],             
             h: [xH, yH, zH],
 
             at: [xAt, yAt, zAt], 
@@ -350,12 +350,12 @@ function getData()
     ];    
 
     let n = {
-        frente: [0,0,-1],
+        frente: [0,0,1],
         topo: [0,1,0],
         baixo: [0,-1,0],
         esquerda: [-1,0,0],
         direita: [1,0,0],
-        fundo: [0,0,1],
+        fundo: [0,0,-1],
       };
     
       let faceNormals = {
@@ -365,27 +365,92 @@ function getData()
         esquerda: [...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda],
         direita: [...n.direita, ...n.direita, ...n.direita, ...n.direita, ...n.direita, ...n.direita],
         fundo: [...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo],
+
+        
+        frente2: [...n.frente, ...n.frente, ...n.frente, ...n.frente],
+        topo2: [...n.topo, ...n.topo, ...n.topo, ...n.topo],
+        baixo2: [...n.baixo, ...n.baixo, ...n.baixo, ...n.baixo],
+        esquerda2: [...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda, ...n.esquerda],
+        direita2: [...n.direita, ...n.direita, ...n.direita, ...n.direita, ...n.direita],
+        fundo2: [...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo, ...n.fundo],
       };
     
       let normals = [
         ...faceNormals.frente,
+        ...faceNormals.fundo,
         ...faceNormals.topo,
         ...faceNormals.baixo,
         ...faceNormals.esquerda,
         ...faceNormals.direita,
-        ...faceNormals.fundo
-      ];
 
-      let normals2 = [
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0]
-      ];
+        ...faceNormals.frente2,
+        ...faceNormals.fundo2,
+        ...faceNormals.topo2,
+        ...faceNormals.baixo2,
+        ...faceNormals.esquerda2,
+        ...faceNormals.direita2,
+        
+        ...faceNormals.frente,
+        ...faceNormals.fundo,
+        ...faceNormals.topo,
+        ...faceNormals.baixo,
+        ...faceNormals.esquerda,
+        ...faceNormals.direita,
 
-    return {"points" : new Float32Array(faces), "normals": new Float32Array(normals), "normals2": new Float32Array(normals2)};
+        ...faceNormals.frente2,
+        ...faceNormals.fundo2,
+        ...faceNormals.topo2,
+        ...faceNormals.baixo2,
+        ...faceNormals.esquerda2,
+        ...faceNormals.direita2,
+        
+        ...faceNormals.frente,
+        ...faceNormals.fundo,
+        ...faceNormals.topo,
+        ...faceNormals.baixo,
+        ...faceNormals.esquerda,
+        ...faceNormals.direita,
+
+        ...faceNormals.frente2,
+        ...faceNormals.fundo2,
+        ...faceNormals.topo2,
+        ...faceNormals.baixo2,
+        ...faceNormals.esquerda2,
+        ...faceNormals.direita2,
+        
+        ...faceNormals.frente,
+        ...faceNormals.fundo,
+        ...faceNormals.topo,
+        ...faceNormals.baixo,
+        ...faceNormals.esquerda,
+        ...faceNormals.direita,
+
+        ...faceNormals.frente2,
+        ...faceNormals.fundo2,
+        ...faceNormals.topo2,
+        ...faceNormals.baixo2,
+        ...faceNormals.esquerda2,
+        ...faceNormals.direita2,
+        
+        ...faceNormals.frente,
+        ...faceNormals.fundo,
+        ...faceNormals.topo,
+        ...faceNormals.baixo,
+        ...faceNormals.esquerda,
+        ...faceNormals.direita,
+
+        ...faceNormals.frente2,
+        ...faceNormals.fundo2,
+        ...faceNormals.topo2,
+        ...faceNormals.baixo2,
+        ...faceNormals.esquerda2,
+        ...faceNormals.direita2,
+        
+        
+      ];
+ 
+    
+    return {"points" : new Float32Array(faces), "normals": new Float32Array(normals)};
 }
 
 async function main() 
@@ -429,13 +494,6 @@ async function main()
     gl.enableVertexAttribArray(normalAttr);
     gl.vertexAttribPointer(normalAttr, 3, gl.FLOAT, false, 0, 0);
 
-    normalAttr2 = gl.getAttribLocation(shaderProgram, "normal2");
-    normalBuffer2 = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer2);
-    gl.bufferData(gl.ARRAY_BUFFER, data.normals2, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(normalAttr2);
-    gl.vertexAttribPointer(normalAttr2, 3, gl.FLOAT, false, 0, 0);
-
     // 7.1 - PROJECTION MATRIX UNIFORM
     resize();
     window.addEventListener("resize", resize);
@@ -456,13 +514,24 @@ async function main()
 
     // 8 - Chamar o loop de redesenho
     render();
-    breakBlock();
-    hitTable();
-    hitWall();
 }
 
 function render() 
 {
+    let hor = (kl + kr) * tableSpeed;
+    
+   
+        tablePos[0] += hor;
+
+
+    if(tablePos[0] < -60){
+        tablePos[0] = -60;
+    }
+    if(tablePos[0] > 60){
+        tablePos[0] = 60;
+    }
+
+
     if (active)
     {
         cam();
@@ -564,7 +633,10 @@ function render()
     ballPos[0] = ballX * ballSpeed;
     ballPos[1] = ballY * ballSpeed;
 
-   window.requestAnimationFrame(main);
+    breakBlock();
+    hitTable();
+    hitWall();
+   window.requestAnimationFrame(render);
 }
 
 function hitTable()
@@ -579,7 +651,7 @@ function hitTable()
         y1Ball = ballPos[1] - 28,
         y2Ball = ballPos[1] - 30;
 
-    if(y2Ball === y1Table && x2Ball <= x2Table && x2Ball >= x1Table)
+    if(y2Ball <= y1Table  && y1Ball >= y2Table &&x2Ball <= x2Table && x2Ball >= x1Table)
     {
         if((x2Ball < x2Table && x2Ball >= 5))
         {
@@ -675,15 +747,15 @@ function hitWall()
         y1Ball = ballPos[1] - 28,
         y2Ball = ballPos[1] - 30;
 
-    if(x1Ball === leftWall)
+    if(x1Ball <= leftWall)
     {
         reverseBallX = true;  
     }
-    if(x2Ball === rightWall)
+    if(x2Ball >= rightWall)
     {
         reverseBallX = false;  
     }
-    if(y1Ball === topWall)
+    if(y1Ball >= topWall)
     {
         reverseBallY = false;  
     }
@@ -792,21 +864,22 @@ function activeButton()
     }
 }
 
-function keyDown(evt)
-{
-    if(evt.key === "ArrowLeft" && tablePos[0] > -60)
-    {
-         tablePos[0] -= 3;
-    }
+function keyUp(evt){
+    if(evt.key === "a") return kl = 0;
+    if(evt.key === "d") return kr = 0;
+}
+
+function keyPress(evt){
     
-    if(evt.key === "ArrowRight" && tablePos[0] < 60) 
-    {
-        tablePos[0] += 3;  
+    if(evt.key === "a") {
+        return kl = -1;
+    }
+    if(evt.key === "d") {
+        return kr = 1;
     }
 }
 
 window.addEventListener("load", main);
-//window.addEventListener("keydown", activeButton)
 
-
-window.addEventListener("keydown", keyDown);
+window.addEventListener("keyup", keyUp);
+window.addEventListener("keypress", keyPress);
