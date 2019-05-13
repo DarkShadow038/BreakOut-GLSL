@@ -4,8 +4,9 @@ let {mat4, vec4, vec3, vec2} = glMatrix;
 
 let xAngle = 1,
     yAngle = 1,
-    ballSpeed = 1,
-    tableSpeed = 1;
+    ballSpeed = 0.4,
+    tableSpeed = 1,
+	turnCamChance = 15;
 
 let kl = 0, 
     kr = 0;
@@ -27,8 +28,7 @@ let i = 1,
     data,
     positionAttr,
     positionBuffer,
-    width,
-    height,
+    width,height,
     projectionUniform,
     projection,
     loc = [0, 0, 0],
@@ -86,23 +86,23 @@ let i = 1,
     xGb = -1, yGb = -30, zGb = -1,
     xHb =  1, yHb = -30, zHb = -1.
     
-    xAw = -68, yAw = 65, zAw =0.1,
-    xBw = -66, yBw = 65, zBw =0.1,
+    xAw = -68, yAw = 38, zAw =0.1,
+    xBw = -66, yBw = 38, zBw =0.1,
     xCw = -68, yCw =-65, zCw =0.1,
     xDw = -66, yDw =-65, zDw =0.1,
-    xEw = -68, yEw = 65, zEw =-0.1,
-    xFw = -66, yFw = 65, zFw =-0.1,
+    xEw = -68, yEw = 38, zEw =-0.1,
+    xFw = -66, yFw = 38, zFw =-0.1,
     xGw = -68, yGw =-65, zGw =-0.1,
     xHw = -66, yHw =-65, zHw =-0.1,
     
-    xAw2 = -68, yAw2 = 38, zAw2 =0.1,
-    xBw2 =  68, yBw2 = 38, zBw2 =0.1,
-    xCw2 = -68, yCw2 = 36, zCw2 =0.1,
-    xDw2 =  68, yDw2 = 36, zDw2 =0.1,
-    xEw2 = -68, yEw2 = 38, zEw2 =-0.1,
-    xFw2 =  68, yFw2 = 38, zFw2 =-0.1,
-    xGw2 = -68, yGw2 = 36, zGw2 =-0.1,
-    xHw2 =  68, yHw2 = 36, zHw2 =-0.1;
+    xAw2 = -67, yAw2 = 38, zAw2 =0.12,
+    xBw2 =  67, yBw2 = 38, zBw2 =0.12,
+    xCw2 = -67, yCw2 = 36, zCw2 =0.12,
+    xDw2 =  67, yDw2 = 36, zDw2 =0.12,
+    xEw2 = -67, yEw2 = 38, zEw2 =-0.1,
+    xFw2 =  67, yFw2 = 38, zFw2 =-0.1,
+    xGw2 = -67, yGw2 = 36, zGw2 =-0.1,
+    xHw2 =  67, yHw2 = 36, zHw2 =-0.1;
 
 function resize() 
 {
@@ -515,11 +515,9 @@ async function main()
 function render() 
 {
     let hor = (kl + kr) * tableSpeed;
-    
    
-        tablePos[0] += hor;
-
-
+    tablePos[0] += hor;
+	
     if(tablePos[0] < -60){
         tablePos[0] = -60;
     }
@@ -529,8 +527,8 @@ function render()
 
 
     if (active)
-    {
-        //cam();
+    {	
+        cam();
         
         if (time === 1 || time === 0)
         {
@@ -564,7 +562,6 @@ function render()
             if(showBlock[i] === true)
             {
                 block[i] = mat4.fromTranslation([], blockPos);
-
                 gl.uniformMatrix4fv(modelUniform, false, block[i]);
                 gl.uniform3f(colorUniform, 1, 0, 0);
                 gl.drawArrays(gl.TRIANGLES, 0, 36);
@@ -582,6 +579,7 @@ function render()
                 blockX += 5;
             }
         }
+
 
         blockPos[0] = blockX;
         blockPos[1] = blockY;
@@ -626,13 +624,14 @@ function render()
 
     inverseBall();
 
-    ballPos[0] = ballX * ballSpeed;
-    ballPos[1] = ballY * ballSpeed;
-
+	ballPos[0] = ballX * ballSpeed;
+	ballPos[1] = ballY * ballSpeed;
+	
     breakBlock();
     hitTable();
     hitWall();
-   window.requestAnimationFrame(render);
+	
+	window.requestAnimationFrame(render);
 }
 
 function hitTable()
@@ -647,7 +646,7 @@ function hitTable()
         y1Ball = ballPos[1] - 28,
         y2Ball = ballPos[1] - 30;
 
-    if(y2Ball <= y1Table  && y1Ball >= y2Table && x2Ball <= x2Table && x2Ball >= x1Table)
+    if(y2Ball <= y1Table && y2Ball >= y1Table - 1 && (x2Ball <= x2Table && x2Ball >= x1Table || x1Ball >= x1Table && x1Ball <= x2Table))
     { 
         if(x2Ball < x2Table && x2Ball >= x1Table + 5 || x1Ball >= x1Table + 5 && x1Ball <= x2Table)
         {
@@ -687,45 +686,45 @@ function breakBlock()
         if(showBlock[i] === true)
         {
             // Acerta o bloco na direita
-            if(x1Ball === x2Block && ((y1Ball <= y1Block && y1Ball >= y2Block ) || (y2Ball >= y2Block && y2Ball <= y1Block)))
+            if(x1Ball <= x2Block && x1Ball >= x2Block - 1 && ((y1Ball <= y1Block && y1Ball >= y2Block ) || (y2Ball >= y2Block && y2Ball <= y1Block)))
             {
                 reverseBallX = true;  
                 showBlock[i] = false;
 
-                if (rand < 25)
+                if (rand < turnCamChance)
                 {
                     active = true;
                 }
             }
             // Acerta o bloco na esquerda
-            else if(x2Ball === x1Block && ((y1Ball <= y1Block && y1Ball >= y2Block ) || (y2Ball >= y2Block && y2Ball <= y1Block)))
+            else if(x2Ball >= x1Block && x2Ball <= x1Block + 1 && ((y1Ball <= y1Block && y1Ball >= y2Block ) || (y2Ball >= y2Block && y2Ball <= y1Block)))
             {
                 reverseBallX = false;  
                 showBlock[i] = false;
 
-                if (rand < 25)
+                if (rand < turnCamChance)
                 {
                     active = true;
                 }
             }
             // Acerta o bloco em baixo
-            else if(y1Ball === y2Block && ((x1Ball > x1Block && x1Ball < x2Block ) || (x2Ball < x2Block && x2Ball > x1Block)))
+            else if(y1Ball >= y2Block && y1Ball <= y2Block + 1 && ((x1Ball >= x1Block && x1Ball <= x2Block ) || (x2Ball <= x2Block && x2Ball >= x1Block)))
             {
                 reverseBallY = false;  
                 showBlock[i] = false;
 
-                if (rand < 25)
+                if (rand < turnCamChance)
                 {
                     active = true;
                 }
             }
             // Acerta o bloco em cima
-            else if(y2Ball === y1Block && ((x1Ball > x1Block && x1Ball < x2Block ) || (x2Ball < x2Block && x2Ball > x1Block)))
+            else if(y2Ball <= y1Block && y2Ball >= y1Block - 1 && ((x1Ball >= x1Block && x1Ball <= x2Block ) || (x2Ball <= x2Block && x2Ball >= x1Block)))
             {
                 reverseBallY = true;  
                 showBlock[i] = false;
 
-                if (rand < 25)
+                if (rand < turnCamChance)
                 {
                     active = true;
                 }
@@ -761,23 +760,26 @@ function hitWall()
 
 function inverseBall()
 {
-    if(reverseBallY == true)
-    {
-        ballY += yAngle;
-    }
-    else
-    {
-        ballY -= yAngle;
-    }
+	if(!active)
+	{
+		if(reverseBallY == true)
+		{
+			ballY += yAngle;
+		}
+		else
+		{
+			ballY -= yAngle;
+		}
 
-    if(reverseBallX == true)
-    {
-        ballX += xAngle;
-    }
-    else
-    {
-        ballX -= xAngle;
-    }
+		if(reverseBallX == true)
+		{
+			ballX += xAngle;
+		}
+		else
+		{
+			ballX -= xAngle;
+		}
+	}
 }
 
 function cam()
@@ -840,28 +842,6 @@ function cam()
         
 }
 
-function activeButton()
-{
-    document.onkeydown = function(event) 
-    {
-        switch (event.keyCode) 
-        {
-            case 32:
-                if (!active)
-                {
-                    active = true;
-                }
-                break;
-            case 37:
-                tablePos[0] -= 3;
-                break;
-            case 39:
-                tablePos[0] += 3;
-                break;
-        }   
-    }
-}
-
 function keyUp(evt){
     if(evt.key === "a") return kl = 0;
     if(evt.key === "d") return kr = 0;
@@ -878,6 +858,5 @@ function keyPress(evt){
 }
 
 window.addEventListener("load", main);
-
 window.addEventListener("keyup", keyUp);
 window.addEventListener("keypress", keyPress);
