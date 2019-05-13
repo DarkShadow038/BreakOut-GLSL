@@ -2,10 +2,10 @@
 
 let {mat4, vec4, vec3, vec2} = glMatrix;
 
-const ballSpeed = 0.5,
-      tableSpeed = 1;
-
-const COS_45 = Math.cos(Math.PI * 0.25);
+let xAngle = 1,
+    yAngle = 1,
+    ballSpeed = 1,
+    tableSpeed = 1;
 
 let kl = 0, 
     kr = 0;
@@ -530,7 +530,7 @@ function render()
 
     if (active)
     {
-        cam();
+        //cam();
         
         if (time === 1 || time === 0)
         {
@@ -647,15 +647,17 @@ function hitTable()
         y1Ball = ballPos[1] - 28,
         y2Ball = ballPos[1] - 30;
 
-    if(y2Ball <= y1Table  && y1Ball >= y2Table &&x2Ball <= x2Table && x2Ball >= x1Table)
-    {
-        if((x2Ball < x2Table && x2Ball >= 5))
+    if(y2Ball <= y1Table  && y1Ball >= y2Table && x2Ball <= x2Table && x2Ball >= x1Table)
+    { 
+        if(x2Ball < x2Table && x2Ball >= x1Table + 5 || x1Ball >= x1Table + 5 && x1Ball <= x2Table)
         {
-            reverseBallX = false;
-        }
-        else if((x2Ball > x1Table) && (x2Ball <= 5))
-        {
+			xAngle = Math.abs((x2Table - x2Ball) / 5 - 1);
             reverseBallX = true;
+        }
+        else if(x2Ball > x1Table && x2Ball <= x2Table - 5 || x1Ball >= x1Table && x1 <= x2Table - 5)
+        {
+			xAngle = (x2Table - 5 - x2Ball) / 5;
+            reverseBallX = false;
         }
         
         reverseBallY = true;  
@@ -761,20 +763,20 @@ function inverseBall()
 {
     if(reverseBallY == true)
     {
-        ballY++;
+        ballY += yAngle;
     }
     else
     {
-        ballY--;
+        ballY -= yAngle;
     }
 
     if(reverseBallX == true)
     {
-        ballX++;
+        ballX += xAngle;
     }
     else
     {
-        ballX--;
+        ballX -= xAngle;
     }
 }
 
