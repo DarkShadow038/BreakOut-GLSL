@@ -51,7 +51,7 @@ let i = 1,
     view,
     eye,
     colorUniform,
-    
+    score = 0,
     active = false,
     
     xUp = 0,
@@ -690,6 +690,7 @@ function breakBlock()
             {
                 reverseBallX = true;  
                 showBlock[i] = false;
+                score += 10;
 
                 if (rand < turnCamChance)
                 {
@@ -701,6 +702,7 @@ function breakBlock()
             {
                 reverseBallX = false;  
                 showBlock[i] = false;
+                score += 10;
 
                 if (rand < turnCamChance)
                 {
@@ -712,6 +714,7 @@ function breakBlock()
             {
                 reverseBallY = false;  
                 showBlock[i] = false;
+                score += 10;
 
                 if (rand < turnCamChance)
                 {
@@ -723,12 +726,14 @@ function breakBlock()
             {
                 reverseBallY = true;  
                 showBlock[i] = false;
+                score += 10;
 
                 if (rand < turnCamChance)
                 {
                     active = true;
                 }
             }
+            document.getElementById("score").innerText = "Score: " + score;
         }
     }    
 }
