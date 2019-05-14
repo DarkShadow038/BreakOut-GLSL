@@ -4,8 +4,8 @@ let {mat4, vec4, vec3, vec2} = glMatrix;
 
 let xAngle = 1,
     yAngle = 1,
-    ballSpeed = 0.4,
-    tableSpeed = 1,
+    ballSpeed = 1,
+    tableSpeed = 2,
 	turnCamChance = 15;
 
 let kl = 0, 
@@ -52,6 +52,7 @@ let i = 1,
     eye,
     colorUniform,
     score = 0,
+    
     active = false,
     
     xUp = 0,
@@ -630,6 +631,12 @@ function render()
     breakBlock();
     hitTable();
     hitWall();
+
+    if(ballPos[1] < -35)
+    {
+        alert("Score: " + score + " pontos.\n\nClique em 'Ok' para tentar novamente.");
+        document.location.reload();
+    }
 	
 	window.requestAnimationFrame(render);
 }
@@ -666,6 +673,7 @@ function hitTable()
 function breakBlock()
 {
     let rand = Math.round(Math.random()*100);
+    
     let x1Block,
         x2Block,
         y1Block,
@@ -691,6 +699,8 @@ function breakBlock()
                 reverseBallX = true;  
                 showBlock[i] = false;
                 score += 10;
+    
+                document.getElementById("score").innerText = "Score: " + score;
 
                 if (rand < turnCamChance)
                 {
@@ -703,6 +713,8 @@ function breakBlock()
                 reverseBallX = false;  
                 showBlock[i] = false;
                 score += 10;
+    
+                document.getElementById("score").innerText = "Score: " + score;
 
                 if (rand < turnCamChance)
                 {
@@ -715,6 +727,8 @@ function breakBlock()
                 reverseBallY = false;  
                 showBlock[i] = false;
                 score += 10;
+    
+                document.getElementById("score").innerText = "Score: " + score;
 
                 if (rand < turnCamChance)
                 {
@@ -727,13 +741,14 @@ function breakBlock()
                 reverseBallY = true;  
                 showBlock[i] = false;
                 score += 10;
+    
+                document.getElementById("score").innerText = "Score: " + score;
 
                 if (rand < turnCamChance)
                 {
                     active = true;
                 }
             }
-            document.getElementById("score").innerText = "Score: " + score;
         }
     }    
 }
