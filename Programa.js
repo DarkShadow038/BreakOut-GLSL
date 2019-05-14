@@ -2,7 +2,7 @@
 
 let {mat4, vec4, vec3, vec2} = glMatrix;
 
-let xAngle = 1,
+let xAngle = Math.random(),
     yAngle = 1,
     ballSpeed = 0.7,
     tableSpeed = 1.4,
@@ -45,7 +45,7 @@ let i = 1,
     ballX = 0,
     ballY = 0,
     wallPos = [0, 0, 0],
-    reverseBallX = true,   
+    reverseBallX = Math.random() < 0.5 ? true : false,   
     reverseBallY = true,
     viewUniform,
     view,
