@@ -4,8 +4,8 @@ let {mat4, vec4, vec3, vec2} = glMatrix;
 
 let xAngle = 1,
     yAngle = 1,
-    ballSpeed = 1,
-    tableSpeed = 2,
+    ballSpeed = 0.7,
+    tableSpeed = 1.3,
 	turnCamChance = 15;
 
 let kl = 0, 
