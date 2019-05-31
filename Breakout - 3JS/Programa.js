@@ -5,43 +5,58 @@ let scene,
     near,
     far,
     renderer,
+	ball,
+	ballPosX = 0,
+	ballPosY = 0,
+	table,
+	tablePosX = 0,
+	tablePosY = 0,
     cubes = [],
-    maxBlocks = 100;
+	cubePosX = 0,
+    cubePosY = 0;
+	
+	
+const maxBlocks = 120;
 
 function main()
 {
     // 1 - Setup da Cena / Camera e Renderer
     setup();
 
-    // 2.0 - Criar cubo
+    // 2.0 - Cria as geometrias
     getCubeData();
+    getTableData();
+    getBallData();
 
     // 2.1 - Adicionar à cena
-    let posX = -30,
-        posY = 15;
+    cubePosX = -30;
+    cubePosY = 15;
 
     cubes.forEach(cube => {
 
         scene.add(cube);
 
-        cube.translateX(posX);
-        cube.translateY(posY);
-        posX += 3;
+        cube.translateX(cubePosX);
+        cube.translateY(cubePosY);
+		
+        cubePosX += 3;
 
-        if (posX === 30)
+        if (cubePosX >= 30)
         {
-            posX = -30;
-            posY -= 1;
+            cubePosX = -30;
+            cubePosY -= 1;
         }
-    });
+    });	
+		
+	scene.add(table);
+	scene.add(ball);
 
     // 3 - Criar luzes
     createLights();
 
     // 4 - Posicionar câmera
-    camera.position.z = 25;
-    camera.position.y = 3;
-
+    camera.position.z = 27.5;
+    camera.position.y = 0;
     camera.lookAt(0, 0, 0);
 
     // 5 - Inicia Loop de Redesenho
@@ -50,60 +65,73 @@ function main()
 
 function animate() 
 {
-    //cube[1].translateX(2);
-    //cube.rotateY(Math.PI / 30); 
-    //cubes[1].position.x += 0.01
 	renderer.render(scene, camera);
+	moveBall();
 	requestAnimationFrame(animate);
 }
 
 function createLights()
 {
-    var ambient = new THREE.AmbientLight(0x404040);
+    var ambient = new THREE.AmbientLight(0xffffff, 1.25);
     scene.add(ambient);
-
-    var light = new THREE.PointLight(0xffffff, 1, 100);
-    light.position.set(50, 50, 50);
-    scene.add(light);
 }
 
 function getCubeData()
 {
-    var geometry = new THREE.BoxGeometry(3, 1, 1);
-    var material = new THREE.MeshLambertMaterial({color: 0x00ff00});
-
-    var lineMaterial = new THREE.LineBasicMaterial({
-        color: 0x0000ff
-    });
-    
-    var lineGeometry = new THREE.Geometry();
-    lineGeometry.vertices.push(
-        new THREE.Vector3(-1.5, 0.5, -0.5), // A
-        new THREE.Vector3(1.5, 0.5, -0.5),  // B
-        new THREE.Vector3(1.5, 0.5, 0.5),   // C
-        new THREE.Vector3(-1.5, 0.5, 0.5),  // D
-        new THREE.Vector3(-1.5, 0.5, -0.5), // A
-        new THREE.Vector3(-1.5, -0.5, -0.5), // F
-        new THREE.Vector3(-1.5, -0.5, 0.5), // E
-        new THREE.Vector3(-1.5, 0.5, 0.5), // D
-        new THREE.Vector3(1.5, 0.5, 0.5),   // C
-        new THREE.Vector3(1.5, -0.5, 0.5),   // H
-        new THREE.Vector3(-1.5, -0.5, 0.5), // E
-        new THREE.Vector3(-1.5, -0.5, -0.5), // F
-        new THREE.Vector3(1.5, -0.5, -0.5), // G
-        new THREE.Vector3(1.5, -0.5, 0.5),   // H
-        new THREE.Vector3(1.5, -0.5, -0.5), // G
-        new THREE.Vector3(1.5, 0.5, -0.5),  // B
-    );
-    
-    
+	let material,
+		geometry = new THREE.BoxGeometry(3, 1, 1), // Dimensões da geometria
+		texture = new THREE.TextureLoader().load('Textures/Cube.png' ); // Imagem de Textura
+				
     for(let i = 0; i < maxBlocks; i++)
     {
+		
+		if(i < 20)
+			material = new THREE.MeshLambertMaterial({color: 0xff0000, map: texture});
+		else if (i < 40)
+			material = new THREE.MeshLambertMaterial({color: 0xffaf00, map: texture});
+		else if (i < 60)
+			material = new THREE.MeshLambertMaterial({color: 0xffff00, map: texture});
+		else if (i < 80)
+			material = new THREE.MeshLambertMaterial({color: 0x00ff00, map: texture});
+		else if (i < 100)
+			material = new THREE.MeshLambertMaterial({color: 0x00bbff, map: texture});
+		else if (i < 120)
+			material = new THREE.MeshLambertMaterial({color: 0xaa55ff, map: texture});
+		
         cubes[i] = new THREE.Mesh(geometry, material);
-        cubes[i].add(new THREE.Line(lineGeometry, lineMaterial));
     }
 }
 
+function getTableData()
+{
+	let geometry = new THREE.BoxGeometry(5, 1, 1), // Dimensões da geometria
+		texture = new THREE.TextureLoader().load('Textures/Cube.png' ), // Imagem de Textura
+		material = new THREE.MeshLambertMaterial({color: 0xffffff, map: texture});
+		
+    table = new THREE.Mesh(geometry, material);
+	
+	tablePosY = -15;
+	table.translateY(tablePosY);
+}
+
+function getBallData()
+{
+	let geometry = new THREE.SphereGeometry(0.5, 32, 32 ), // Dimensões da geometria
+		texture = new THREE.TextureLoader().load('Textures/Cube.png' ), // Imagem de Textura
+		material = new THREE.MeshLambertMaterial({color: 0xff8800});
+		
+    ball = new THREE.Mesh(geometry, material);	
+	ballPosY = -14;
+	ball.translateY(ballPosY);
+}
+
+function moveBall()
+{
+	ballPosX = 0.4;
+	ballPosY = 0.4;
+	ball.translateX(ballPosX);
+	ball.translateY(ballPosY);
+}
 function setup()
 {
     aspect = window.innerWidth / window.innerHeight;
