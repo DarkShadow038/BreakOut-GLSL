@@ -23,6 +23,9 @@ let scene,
     wallPosY = 0,
     cont = 0,
     blocks = [],
+	blocksRandom = [],
+	blockCont = 0;
+	blockColorSpeed = 7;
     blockPosX = 0,
     blockPosY = 0;
 
@@ -61,11 +64,13 @@ function main()
 function animate() 
 {
     renderer.render(scene, camera);
+	blockCont++;
     moveBall();
     moveTable();
     breakBlock();
     hitWall();
-    hitTable()
+    hitTable();
+	randomColor();
     requestAnimationFrame(animate);
 }
 
@@ -79,10 +84,13 @@ function getBlockData()
 {
     let material,
         geometry = new THREE.BoxGeometry(3, 1, 1), // Dimensões da geometria
-        texture = new THREE.TextureLoader().load('Textures/Cube.png' ); // Imagem de Textura
+        texture = new THREE.TextureLoader().load('Textures/Block.png' ), // Imagem de Textura
+		chance;
 				
     for(let i = 0; i < maxBlocks; i++)
     {		
+		blocksRandom[i] = false;
+		
         if(i < 20)
                 material = new THREE.MeshLambertMaterial({color: 0xff0000, map: texture});
         else if (i < 40)
@@ -97,6 +105,11 @@ function getBlockData()
                 material = new THREE.MeshLambertMaterial({color: 0xaa55ff, map: texture});
 		
         blocks[i] = new THREE.Mesh(geometry, material);
+		
+		chance = Math.random() * 100;
+		
+		if(chance <= 7)
+			blocksRandom[i] = true;
     }
 }
 
@@ -119,6 +132,20 @@ function drawBlocks()
             blockPosY -= 1;
         }
     });	    
+}
+
+function randomColor()
+{
+	let letters = '23456789ABCD',
+		color = '0x',
+		i;
+		
+	for(i = 0; i < 6; i++)
+		color += letters[Math.floor(Math.random() * 12)];
+		
+	for(i = 0; i < maxBlocks; i++)
+		if(blocksRandom[i] && blockCont % blockColorSpeed === 0)
+			blocks[i].material.color.setHex(color);
 }
 
 function drawWalls()
@@ -148,7 +175,7 @@ function drawWalls()
 function getTableData()
 {
 	let geometry = new THREE.BoxGeometry(5, 1, 1), // Dimensões da geometria
-		texture = new THREE.TextureLoader().load('Textures/Cube.png' ), // Imagem de Textura
+		texture = new THREE.TextureLoader().load('Textures/Block.png' ), // Imagem de Textura
 		material = new THREE.MeshLambertMaterial({color: 0xffffff, map: texture});
 		
     table = new THREE.Mesh(geometry, material);
@@ -172,7 +199,7 @@ function getWallData()
 { 
     let material,
         geometry,
-        texture = new THREE.TextureLoader().load('Textures/Cube.png' ); // Imagem de Textura
+        texture = new THREE.TextureLoader().load('Textures/Block.png' ); // Imagem de Textura
         
     for(let i = 0; i < maxWalls; i++)
     {		
