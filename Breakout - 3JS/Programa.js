@@ -11,6 +11,8 @@ let scene,
     ball,
     ballPosX = 0,
     ballPosY = 0,
+    reverseBallX = true,
+    reverseBallY = true,
     ballSpeed = 0.25,
     table,
     tablePosX = 0,
@@ -36,7 +38,9 @@ function main()
     getBlockData();
     getTableData();
     getBallData();
-    getWallData();
+    getWallData();  
+    drawBlocks(); 
+    drawWalls();
 
     // 2.1 - Adicionar à cena    
     scene.add(table);
@@ -57,17 +61,17 @@ function main()
 function animate() 
 {
     renderer.render(scene, camera);
-    drawBlocks();
-    drawWalls();
     moveBall();
     moveTable();
     breakBlock();
+    hitWall();
+    hitTable()
     requestAnimationFrame(animate);
 }
 
 function createLights()
 {
-    var ambient = new THREE.AmbientLight(0xffffff, 1.25);
+    var ambient = new THREE.AmbientLight(0xffffff, 1.5);
     scene.add(ambient);
 }
 
@@ -102,16 +106,10 @@ function drawBlocks()
     blockPosY = 15;
 
     blocks.forEach(block => {
+        scene.add(block);
 
-        if(block !== null)
-        {
-            scene.add(block);
-
-            block.translateX(blockPosX);
-            block.translateY(blockPosY);
-        }
-        else
-            console.log(block);
+        block.translateX(blockPosX);
+        block.translateY(blockPosY);
 		
         blockPosX += 3;
 
@@ -161,7 +159,7 @@ function getTableData()
 
 function getBallData()
 {
-	let geometry = new THREE.SphereGeometry(0.5, 32, 32 ), // Dimensões da geometria
+	let geometry = new THREE.SphereGeometry(0.5, 32, 32), // Dimensões da geometria
 		texture = new THREE.TextureLoader().load('Textures/Cube.png' ), // Imagem de Textura
 		material = new THREE.MeshLambertMaterial({color: 0xff8800});
 		
@@ -195,10 +193,10 @@ function getWallData()
 
 function moveBall()
 {
-	ballPosX = ballSpeed;
-	ballPosY = ballSpeed;
+	ballPosX = (reverseBallX === true ? ballSpeed : ballSpeed * -1);
+	ballPosY = (reverseBallY === true ? ballSpeed : ballSpeed * -1);
 	ball.translateX(ballPosX);
-	ball.translateY(ballPosY);
+    ball.translateY(ballPosY);
 }
 
 function moveTable()
@@ -215,24 +213,91 @@ function moveTable()
 
 function breakBlock()
 {
-    let cubeLeftSide,
-        cubeRightSide,
-        cubeTopSide,
-        cubeBottomSide;
+    let ballLeftSide,
+        ballRightSide,
+        ballTopSide,
+        ballBottomSide,
+        blockLeftSide,
+        blockRightSide,
+        blockTopSide,
+        blockBottomSide;
 
-        for(let i = 0; i < maxBlocks; i++)
+    ballLeftSide = ball.position.x - 0.5;
+    ballRightSide = ball.position.x + 0.5;
+    ballTopSide = ball.position.y + 0.5;
+    ballBottomSide = ball.position.y - 0.5;
+
+    for(let i = 0; i < maxBlocks; i++)
+    {
+        if(scene.getObjectById(blocks[i].id) !== undefined)
         {
-            if(blocks[i] !== null)
+            blockLeftSide = blocks[i].position.x - 1.5;
+            blockRightSide = blocks[i].position.x + 1.5;
+            blockTopSide = blocks[i].position.y + 0.5;
+            blockBottomSide = blocks[i].position.y - 0.5;
+            
+            // Block Bottom Side
+            if(ballTopSide >= blockBottomSide && ballTopSide <= blockTopSide && ballLeftSide >= blockLeftSide && ballRightSide <= blockRightSide)
             {
-                cubeLeftSide = blocks[i].position.x - 1.5;
-                cubeRightSide = blocks[i].position.x + 1.5;
-                cubeTopSide = blocks[i].position.y + 0.5;
-                cubeBottomSide = blocks[i].position.x - 0.5;
+                scene.remove(scene.getObjectById(blocks[i].id));
+                reverseBallY = false;
+            }     
+            // Block Top Side
+            else if(ballBottomSide <= blockTopSide && ballBottomSide >= blockBottomSide && ballLeftSide >= blockLeftSide && ballRightSide <= blockRightSide)
+            {
+                scene.remove(scene.getObjectById(blocks[i].id));    
+                reverseBallY = true;
+            }
+            // Block Left Side
+            else if(ballRightSide >= blockLeftSide && ballRightSide <= blockRightSide && ballTopSide <= blockTopSide && ballBottomSide >= blockBottomSide)
+            {
+                scene.remove(scene.getObjectById(blocks[i].id)); 
+                reverBallX = false;  
+            }
+            // Block Right Side
+            else if(ballLeftSide <= blockRightSide && ballLeftSide >= blockLeftSide && ballTopSide <= blockTopSide && ballBottomSide >= blockBottomSide)
+            {
+                scene.remove(scene.getObjectById(blocks[i].id));  
+                reverBallX = true;   
             }
         }
-        
-        blocks[97] = null;
+    }
+}
 
+function hitWall()
+{
+    let ballLeftSide,
+        ballRightSide,
+        ballTopSide;
+
+    ballLeftSide = ball.position.x - 0.5;
+    ballRightSide = ball.position.x + 0.5;
+    ballTopSide = ball.position.y + 0.5;
+
+    if(ballRightSide <= walls[0].position.x + 0.5)
+        reverseBallX = true;
+
+    if(ballLeftSide >= walls[1].position.x - 0.5)
+        reverseBallX = false;
+
+    if(ballTopSide >= walls[2].position.y - 0.5)
+        reverseBallY = false;
+}
+
+function hitTable()
+{
+    let ballBottomSide,
+        ballTopSide,
+        ballLeftSide,
+        ballRightSide;
+
+    ballTopSide = ball.position.y + 0.5;
+    ballBottomSide = ball.position.y - 0.5;
+    ballRightSide = ball.position.x + 0.5;
+    ballLeftSide = ball.position.x - 0.5;
+
+    if(ballBottomSide <= table.position.y + 0.5 && ballBottomSide >= table.position.y - 0.5 && ballLeftSide >= table.position.x - 1.5 && ballRightSide <= table.position.x + 1.5)
+        reverseBallY = true;
 }
 
 function setup()
@@ -249,7 +314,6 @@ function setup()
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 }
-
 
 function keyUp(evt)
 {
