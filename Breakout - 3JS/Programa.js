@@ -4,6 +4,9 @@ let kl = 0,
 let scene,
     camera,
     aspect,
+    frame = 0,
+    frameIncrease = true,
+    time,
     fovy,
     near,
     far,
@@ -19,6 +22,7 @@ let scene,
     tablePosY = 0,
     tableSpeed = 0.5,
     walls = [],
+	wallRandom = false,
     wallPosX = 0,
     wallPosY = 0,
     cont = 0,
@@ -27,7 +31,8 @@ let scene,
 	blockCont = 0;
 	blockColorSpeed = 7;
     blockPosX = 0,
-    blockPosY = 0;
+    blockPosY = 0,
+	camTurn = false;
 
 const maxBlocks = 120,
       maxWalls = 3;
@@ -71,6 +76,7 @@ function animate()
     hitWall();
     hitTable();
 	randomColor();
+	cam();
     requestAnimationFrame(animate);
 }
 
@@ -146,6 +152,17 @@ function randomColor()
 	for(i = 0; i < maxBlocks; i++)
 		if(blocksRandom[i] && blockCont % blockColorSpeed === 0)
 			blocks[i].material.color.setHex(color);
+		
+	if(wallRandom && blockCont % blockColorSpeed === 0)
+	{
+		walls[0].material.color.setHex(color);
+		walls[1].material.color.setHex(color);
+	}
+	else if(!wallRandom)
+	{
+		walls[0].material.color.setHex(0xaa55ff);
+		walls[1].material.color.setHex(0xaa55ff);
+	}	
 }
 
 function drawWalls()
@@ -199,22 +216,26 @@ function getWallData()
 { 
     let material,
         geometry,
-        texture = new THREE.TextureLoader().load('Textures/Block.png' ); // Imagem de Textura
+        texture; // Imagem de Textura
         
     for(let i = 0; i < maxWalls; i++)
     {		
         if(i !== 2)
         {
-            geometry = new THREE.BoxGeometry(1, 50, 1), // Dimensões da geometria
-            material = new THREE.MeshLambertMaterial({color: 0xff0000, map: texture});
+			texture = new THREE.TextureLoader().load('Textures/Wall-Side.png' );
+			texture.wrapS = THREE.RepeatWrapping;
+            texture.repeat.y = 1;
+            geometry = new THREE.BoxGeometry(1, 42, 1), // Dimensões da geometria
+            material = new THREE.MeshLambertMaterial({color: 0xaa55ff, map: texture});
         }
         else
         {
-            geometry = new THREE.BoxGeometry(80, 1, 1), // Dimensões da geometria
-            material = new THREE.MeshLambertMaterial({color: 0xff0000, map: texture});
+			texture = new THREE.TextureLoader().load('Textures/Wall-Top.png' )
+            geometry = new THREE.BoxGeometry(79, 1, 1), // Dimensões da geometria
+            material = new THREE.MeshLambertMaterial({color: 0xaa55ff, map: texture});
         }
 		
-        walls[i] = new THREE.Mesh(geometry, material);
+        walls[i] = new THREE.Mesh(geometry, material);		
     }    
 }
 
@@ -268,24 +289,44 @@ function breakBlock()
             {
                 scene.remove(scene.getObjectById(blocks[i].id));
                 reverseBallY = false;
+				
+				if(blocksRandom[i])
+				{
+					wallRandom = true;
+				}					
             }     
             // Block Top Side
             else if(ballBottomSide <= blockTopSide && ballBottomSide >= blockBottomSide && ballLeftSide >= blockLeftSide && ballRightSide <= blockRightSide)
             {
                 scene.remove(scene.getObjectById(blocks[i].id));    
                 reverseBallY = true;
+				
+				if(blocksRandom[i])
+				{
+					wallRandom = true;
+				}		
             }
             // Block Left Side
             else if(ballRightSide >= blockLeftSide && ballRightSide <= blockRightSide && ballTopSide <= blockTopSide && ballBottomSide >= blockBottomSide)
             {
                 scene.remove(scene.getObjectById(blocks[i].id)); 
                 reverBallX = false;  
+				
+				if(blocksRandom[i])
+				{
+					wallRandom = true;
+				}		
             }
             // Block Right Side
             else if(ballLeftSide <= blockRightSide && ballLeftSide >= blockLeftSide && ballTopSide <= blockTopSide && ballBottomSide >= blockBottomSide)
             {
                 scene.remove(scene.getObjectById(blocks[i].id));  
                 reverBallX = true;   
+				
+				if(blocksRandom[i])
+				{
+					wallRandom = true;
+				}		
             }
         }
     }
@@ -301,11 +342,25 @@ function hitWall()
     ballRightSide = ball.position.x + 0.5;
     ballTopSide = ball.position.y + 0.5;
 
-    if(ballRightSide <= walls[0].position.x + 0.5)
+    if(ballRightSide <= walls[0].position.x + 0.5 && !wallRandom)
+	{
         reverseBallX = true;
+	}
+	else if(ballRightSide <= walls[0].position.x + 0.5 && wallRandom)
+	{
+		wallRandom = false;
+		camTurn = true;
+	}
 
-    if(ballLeftSide >= walls[1].position.x - 0.5)
+    if(ballLeftSide >= walls[1].position.x - 0.5 && !wallRandom)
+	{
         reverseBallX = false;
+	}
+	else if(ballLeftSide >= walls[1].position.x - 0.5 && wallRandom)
+	{
+		wallRandom = false;	
+		camTurn = true;	
+	}
 
     if(ballTopSide >= walls[2].position.y - 0.5)
         reverseBallY = false;
@@ -327,6 +382,13 @@ function hitTable()
         reverseBallY = true;
 }
 
+
+function cam()
+{
+	
+		
+}
+
 function setup()
 {
     aspect = window.innerWidth / window.innerHeight;
@@ -337,7 +399,7 @@ function setup()
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(fovy, aspect, near, far);
     renderer = new THREE.WebGLRenderer();
-        
+	
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 }
@@ -355,6 +417,17 @@ function keyPress(evt)
     if(evt.key === "d") return kr = 1;
 }
 
+function resize()
+{
+	let width = window.innerWidth;
+	let height = window.innerHeight;
+	renderer.setSize( width, height);
+
+	camera.aspect = width / height; 
+	camera.updateProjectionMatrix();
+}
+
 main();
+window.addEventListener('resize', resize);
 window.addEventListener("keyup", keyUp);
 window.addEventListener("keypress", keyPress);
