@@ -50,14 +50,14 @@ function main()
     drawBlocks(); 
     drawWalls();
 
-    // 2.1 - Adicionar √† cena    
+    // 2.1 - Adicionar ‡ cena    
     scene.add(table);
     scene.add(ball);
 
     // 3 - Criar luzes
     createLights();
 
-    // 4 - Posicionar c√¢mera
+    // 4 - Posicionar c‚mera
     camera.position.z = 27.5;
     camera.position.y = 0;
     camera.lookAt(0, 0, 0);
@@ -89,7 +89,7 @@ function createLights()
 function getBlockData()
 {
     let material,
-        geometry = new THREE.BoxGeometry(3, 1, 1), // Dimens√µes da geometria
+        geometry = new THREE.BoxGeometry(3, 1, 1), // Dimensıes da geometria
         texture = new THREE.TextureLoader().load('Textures/Block.png' ), // Imagem de Textura
 		chance;
 				
@@ -191,7 +191,7 @@ function drawWalls()
 
 function getTableData()
 {
-	let geometry = new THREE.BoxGeometry(5, 1, 1), // Dimens√µes da geometria
+	let geometry = new THREE.BoxGeometry(5, 1, 1), // Dimensıes da geometria
 		texture = new THREE.TextureLoader().load('Textures/Block.png' ), // Imagem de Textura
 		material = new THREE.MeshLambertMaterial({color: 0xffffff, map: texture});
 		
@@ -203,7 +203,7 @@ function getTableData()
 
 function getBallData()
 {
-	let geometry = new THREE.SphereGeometry(0.5, 32, 32), // Dimens√µes da geometria
+	let geometry = new THREE.SphereGeometry(0.5, 32, 32), // Dimensıes da geometria
 		texture = new THREE.TextureLoader().load('Textures/Cube.png' ), // Imagem de Textura
 		material = new THREE.MeshLambertMaterial({color: 0xff8800});
 		
@@ -225,13 +225,13 @@ function getWallData()
 			texture = new THREE.TextureLoader().load('Textures/Wall-Side.png' );
 			texture.wrapS = THREE.RepeatWrapping;
             texture.repeat.y = 1;
-            geometry = new THREE.BoxGeometry(1, 42, 1), // Dimens√µes da geometria
+            geometry = new THREE.BoxGeometry(1, 42, 1), // Dimensıes da geometria
             material = new THREE.MeshLambertMaterial({color: 0xaa55ff, map: texture});
         }
         else
         {
 			texture = new THREE.TextureLoader().load('Textures/Wall-Top.png' )
-            geometry = new THREE.BoxGeometry(79, 1, 1), // Dimens√µes da geometria
+            geometry = new THREE.BoxGeometry(79, 1, 1), // Dimensıes da geometria
             material = new THREE.MeshLambertMaterial({color: 0xaa55ff, map: texture});
         }
 		
