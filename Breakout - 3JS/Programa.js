@@ -28,11 +28,14 @@ let scene,
     cont = 0,
     blocks = [],
 	blocksRandom = [],
-	blockCont = 0;
-	blockColorSpeed = 7;
+	blockCont = 0,
+	blockColorSpeed = 7,
     blockPosX = 0,
     blockPosY = 0,
-	camTurn = false;
+    randomTime = 0,
+    camTurn = false,
+    tempCam = 0.5,
+    shake = false;
 
 const maxBlocks = 120,
       maxWalls = 3;
@@ -50,14 +53,13 @@ function main()
     drawBlocks(); 
     drawWalls();
 
-    // 2.1 - Adicionar à cena    
+    // 2.1 - Adicionar ï¿½ cena    
     scene.add(table);
     scene.add(ball);
-
     // 3 - Criar luzes
     createLights();
 
-    // 4 - Posicionar câmera
+    // 4 - Posicionar cï¿½mera
     camera.position.z = 27.5;
     camera.position.y = 0;
     camera.lookAt(0, 0, 0);
@@ -75,8 +77,12 @@ function animate()
     breakBlock();
     hitWall();
     hitTable();
-	randomColor();
-	cam();
+    randomColor();
+    if (shake) {   
+        tempCam *= -3;
+        camera.translateX(tempCam);
+    }
+
     requestAnimationFrame(animate);
 }
 
@@ -89,7 +95,7 @@ function createLights()
 function getBlockData()
 {
     let material,
-        geometry = new THREE.BoxGeometry(3, 1, 1), // Dimensões da geometria
+        geometry = new THREE.BoxGeometry(3, 1, 1), // Dimensï¿½es da geometria
         texture = new THREE.TextureLoader().load('Textures/Block.png' ), // Imagem de Textura
 		chance;
 				
@@ -157,11 +163,13 @@ function randomColor()
 	{
 		walls[0].material.color.setHex(color);
 		walls[1].material.color.setHex(color);
+		walls[2].material.color.setHex(color);
 	}
 	else if(!wallRandom)
 	{
-		walls[0].material.color.setHex(0xaa55ff);
-		walls[1].material.color.setHex(0xaa55ff);
+		walls[0].material.color.setHex(0x1e5da0);
+		walls[1].material.color.setHex(0x1e5da0);
+		walls[2].material.color.setHex(0x1e5da0);
 	}	
 }
 
@@ -191,19 +199,19 @@ function drawWalls()
 
 function getTableData()
 {
-	let geometry = new THREE.BoxGeometry(5, 1, 1), // Dimensões da geometria
+	let geometry = new THREE.CylinderGeometry(2, 1, 1, 64), // Dimensï¿½es da geometria
 		texture = new THREE.TextureLoader().load('Textures/Block.png' ), // Imagem de Textura
 		material = new THREE.MeshLambertMaterial({color: 0xffffff, map: texture});
 		
     table = new THREE.Mesh(geometry, material);
 	
 	tablePosY = -15;
-	table.translateY(tablePosY);
+    table.translateY(tablePosY);
 }
 
 function getBallData()
 {
-	let geometry = new THREE.SphereGeometry(0.5, 32, 32), // Dimensões da geometria
+	let geometry = new THREE.SphereGeometry(0.5, 32, 32), // Dimensï¿½es da geometria
 		texture = new THREE.TextureLoader().load('Textures/Cube.png' ), // Imagem de Textura
 		material = new THREE.MeshLambertMaterial({color: 0xff8800});
 		
@@ -222,17 +230,17 @@ function getWallData()
     {		
         if(i !== 2)
         {
-			texture = new THREE.TextureLoader().load('Textures/Wall-Side.png' );
+			texture = new THREE.TextureLoader().load('Textures/Wall-Side.png');
 			texture.wrapS = THREE.RepeatWrapping;
             texture.repeat.y = 1;
-            geometry = new THREE.BoxGeometry(1, 42, 1), // Dimensões da geometria
-            material = new THREE.MeshLambertMaterial({color: 0xaa55ff, map: texture});
+            geometry = new THREE.BoxGeometry(1, 42, 1), // Dimensï¿½es da geometria
+            material = new THREE.MeshLambertMaterial({color: 0x1e5da0 , map: texture});
         }
         else
         {
-			texture = new THREE.TextureLoader().load('Textures/Wall-Top.png' )
-            geometry = new THREE.BoxGeometry(79, 1, 1), // Dimensões da geometria
-            material = new THREE.MeshLambertMaterial({color: 0xaa55ff, map: texture});
+			texture = new THREE.TextureLoader().load('Textures/Wall-Top.png')
+            geometry = new THREE.BoxGeometry(79, 1, 1), // Dimensï¿½es da geometria
+            material = new THREE.MeshLambertMaterial({color: 0x1e5da0 , map: texture});
         }
 		
         walls[i] = new THREE.Mesh(geometry, material);		
@@ -292,7 +300,10 @@ function breakBlock()
 				
 				if(blocksRandom[i])
 				{
-					wallRandom = true;
+                    randomTime = 0;
+                    wallRandom = true;
+                    shake = true;
+                    setTimeout(timeRandom, 10000);
 				}					
             }     
             // Block Top Side
@@ -303,7 +314,10 @@ function breakBlock()
 				
 				if(blocksRandom[i])
 				{
-					wallRandom = true;
+                    randomTime = 0;
+                    wallRandom = true;
+                    shake = true;
+                    setTimeout(timeRandom, 10000);
 				}		
             }
             // Block Left Side
@@ -314,7 +328,10 @@ function breakBlock()
 				
 				if(blocksRandom[i])
 				{
-					wallRandom = true;
+                    randomTime = 0;
+                    wallRandom = true;
+                    shake = true;
+                    setTimeout(timeRandom, 10000);
 				}		
             }
             // Block Right Side
@@ -325,7 +342,10 @@ function breakBlock()
 				
 				if(blocksRandom[i])
 				{
-					wallRandom = true;
+                    randomTime = 0;
+                    wallRandom = true;
+                    shake = true;
+                    setTimeout(timeRandom, 10000);
 				}		
             }
         }
@@ -342,23 +362,21 @@ function hitWall()
     ballRightSide = ball.position.x + 0.5;
     ballTopSide = ball.position.y + 0.5;
 
-    if(ballRightSide <= walls[0].position.x + 0.5 && !wallRandom)
+    if(ballRightSide <= walls[0].position.x + 0.5)
 	{
         reverseBallX = true;
 	}
-	else if(ballRightSide <= walls[0].position.x + 0.5 && wallRandom)
+	else if(ballRightSide <= walls[0].position.x + 0.5)
 	{
-		wallRandom = false;
 		camTurn = true;
 	}
 
-    if(ballLeftSide >= walls[1].position.x - 0.5 && !wallRandom)
+    if(ballLeftSide >= walls[1].position.x - 0.5)
 	{
         reverseBallX = false;
 	}
-	else if(ballLeftSide >= walls[1].position.x - 0.5 && wallRandom)
+	else if(ballLeftSide >= walls[1].position.x - 0.5)
 	{
-		wallRandom = false;	
 		camTurn = true;	
 	}
 
@@ -382,11 +400,10 @@ function hitTable()
         reverseBallY = true;
 }
 
-
-function cam()
+function timeRandom()
 {
-	
-		
+    wallRandom = false;
+    shake = false;
 }
 
 function setup()
