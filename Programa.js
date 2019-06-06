@@ -63,7 +63,7 @@ function main()
     camera.position.z = 27.5;
     camera.position.y = 0;
     camera.lookAt(0, 0, 0);
-
+    
     // 5 - Inicia Loop de Redesenho
     animate();
 }
@@ -79,7 +79,7 @@ function animate()
     hitTable();
     randomColor();
     if (shake) {   
-        tempCam *= -3;
+        tempCam *= -1;
         camera.translateX(tempCam);
     }
 
