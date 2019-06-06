@@ -63,7 +63,7 @@ function main()
     camera.position.z = 27.5;
     camera.position.y = 0;
     camera.lookAt(0, 0, 0);
-    
+
     // 5 - Inicia Loop de Redesenho
     animate();
 }
@@ -438,10 +438,11 @@ function resize()
 {
 	let width = window.innerWidth;
 	let height = window.innerHeight;
-	renderer.setSize( width, height);
-
+    
 	camera.aspect = width / height; 
-	camera.updateProjectionMatrix();
+    camera.updateProjectionMatrix();
+
+	renderer.setSize( width, height);
 }
 
 main();
